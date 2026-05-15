@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MarketsApp
+
+A venture marketplace platform where accredited investors can discover, bid on, and invest in individual startup fund listings — both primary and secondary.
+
+## Features
+
+- **Browse listings** — public-facing marketplace of startup fund opportunities
+- **NDA flow** — investors sign a digital NDA (with signature pad) to unlock confidential deal details
+- **Bid placement** — minimum $50,000 bids with admin-managed status progression
+- **KYC verification** — investor identity verification (individual or entity)
+- **Admin dashboard** — manage listings, review bids, upload documents, approve KYC
+- **Email OTP auth** — passwordless sign-in via 6-digit code
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 14+ (App Router) · React 19 · TypeScript |
+| Styling | Tailwind CSS · shadcn/ui (Radix primitives) |
+| Backend | Next.js API Routes |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth — Email OTP |
+| Storage | Supabase Storage |
+| State | TanStack Query (React Query) |
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone & install
+
+```bash
+git clone https://github.com/YOUR_USERNAME/MarketsApp.git
+cd MarketsApp
+npm install
+```
+
+### 2. Set up Supabase
+
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run the SQL migration: `supabase/migrations/001_initial_schema.sql` in your project's SQL editor
+3. Create storage buckets: `documents`, `signatures`, `logos`
+4. Enable Email OTP in Authentication → Providers → Email
+
+### 3. Configure environment variables
+
+```bash
+cp .env.local.example .env.local
+# Fill in your Supabase URL and anon key
+```
+
+### 4. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/                  # Next.js App Router pages
+│   ├── auth/             # Login, OTP verify, KYC
+│   ├── listings/         # Browse + detail pages
+│   ├── bids/             # Investor bid management
+│   ├── profile/          # Investor profile + KYC view
+│   ├── admin/            # Admin dashboard, listings, bids, users, docs
+│   └── api/              # API route handlers
+├── components/           # Shared UI components
+└── lib/                  # Supabase client, auth helpers, TypeScript types
+supabase/
+└── migrations/           # SQL schema migrations
+```
 
-## Learn More
+## User Roles
 
-To learn more about Next.js, take a look at the following resources:
+| Role | Access |
+|---|---|
+| `investor` | Browse listings, sign NDAs, place bids, view own bids |
+| `admin` | Full access — create/edit listings, review bids, approve KYC, upload documents |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Bid Status Flow
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+placed → accepted → awaiting_payment → invested
+placed → rejected
+```
