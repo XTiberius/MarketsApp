@@ -16,7 +16,18 @@ export async function getServerUser(): Promise<User | null> {
     .eq('id', user.id)
     .single()
 
-  return profile ?? null
+  if (profile) return profile
+
+  // Profile row missing — the handle_new_user trigger may not have fired yet
+  // (e.g. first login race condition). Upsert it now so the user isn't
+  // permanently locked out of auth-gated pages.
+  const { data: upserted } = await supabase
+    .from('users')
+    .upsert({ id: user.id, email: user.email ?? '' }, { onConflict: 'id' })
+    .select()
+    .single()
+
+  return upserted ?? null
 }
 
 // ─── Auth guards ─────────────────────────────────────────────────────────────
