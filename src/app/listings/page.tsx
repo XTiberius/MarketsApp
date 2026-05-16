@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { ListingCard } from '@/components/ListingCard'
 import type { ListingPublic } from '@/lib/types'
 

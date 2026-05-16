@@ -1,5 +1,5 @@
 import { requireKycApproved } from '@/lib/auth'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { Bid, Listing } from '@/lib/types'
 

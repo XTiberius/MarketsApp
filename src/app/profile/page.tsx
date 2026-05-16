@@ -1,5 +1,5 @@
 import { requireAuth } from '@/lib/auth'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { formatDate } from '@/lib/utils'
 import { KYCForm } from '@/components/KYCForm'
 

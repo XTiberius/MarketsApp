@@ -1,5 +1,5 @@
 import { requireAdmin } from '@/lib/auth'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { AdminBidManagement } from '@/components/AdminBidManagement'
 
 export default async function AdminBidsPage() {

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getServerUser } from '@/lib/auth'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { BidModal } from '@/components/BidModal'

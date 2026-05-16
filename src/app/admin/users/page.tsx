@@ -1,5 +1,5 @@
 import { requireAdmin } from '@/lib/auth'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { formatDate } from '@/lib/utils'
 import type { User } from '@/lib/types'
 
