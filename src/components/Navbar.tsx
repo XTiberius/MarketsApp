@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import { User } from 'lucide-react'
 import { getServerUser } from '@/lib/auth'
+import { SignOutButton } from '@/components/SignOutButton'
 
 export async function Navbar() {
   const user = await getServerUser()
@@ -26,9 +28,15 @@ export async function Navbar() {
               <Link href="/bids" className="text-muted-foreground hover:text-foreground transition-colors">
                 My Bids
               </Link>
-              <Link href="/profile" className="text-muted-foreground hover:text-foreground transition-colors">
-                Profile
+              <Link
+                href="/profile"
+                aria-label="Profile"
+                title="Profile"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <User className="h-5 w-5" />
               </Link>
+              <SignOutButton />
             </>
           ) : (
             <Link
