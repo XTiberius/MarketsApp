@@ -6,28 +6,30 @@ import type { User } from '@/lib/types'
 
 export async function getServerUser(): Promise<User | null> {
   const supabase = await createServerSupabaseClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (error || !user) return null
+  if (authError || !user) return null
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('users')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (profile) return profile
+  // Never fabricate a profile. Defaulting to role: 'investor' silently
+  // downgrades admins and hides admin-only UI. An empty or failed read is a
+  // real error — surface it instead of guessing the role.
+  if (profileError) {
+    console.error('[getServerUser] profile query failed:', profileError.message)
+    return null
+  }
 
-  // Profile row missing — the handle_new_user trigger may not have fired yet
-  // (e.g. first login race condition). Upsert it now so the user isn't
-  // permanently locked out of auth-gated pages.
-  const { data: upserted } = await supabase
-    .from('users')
-    .upsert({ id: user.id, email: user.email ?? '' }, { onConflict: 'id' })
-    .select()
-    .single()
+  if (!profile) {
+    console.error('[getServerUser] no public.users row for auth user', user.id)
+    return null
+  }
 
-  return upserted ?? null
+  return profile
 }
 
 // ─── Auth guards ─────────────────────────────────────────────────────────────
