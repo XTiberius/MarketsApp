@@ -23,12 +23,13 @@ export default async function ProfilePage() {
     <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
       {/* Account Info */}
       <div className="rounded-lg border border-border p-6 space-y-3">
-        <h1 className="text-xl font-semibold">Account</h1>
-        <div className="text-sm space-y-1">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Email</span>
-            <span>{user.email}</span>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold">
+            {user.first_name} {user.last_name}
+          </h1>
+          <p className="text-sm text-muted-foreground">{user.email}</p>
+        </div>
+        <div className="text-sm space-y-1 pt-3 border-t border-border">
           <div className="flex justify-between">
             <span className="text-muted-foreground">Member since</span>
             <span>{formatDate(user.created_at)}</span>
@@ -63,7 +64,12 @@ export default async function ProfilePage() {
             )}
           </div>
         ) : (
-          <KYCForm userId={user.id} kycStatus={user.kyc_status} />
+          <KYCForm
+            userId={user.id}
+            kycStatus={user.kyc_status}
+            firstName={user.first_name}
+            lastName={user.last_name}
+          />
         )}
       </div>
     </div>

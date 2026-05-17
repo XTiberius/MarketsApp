@@ -13,6 +13,8 @@ export type DocumentType = 'investment_agreement' | 'k1' | 'reg_d' | 'other'
 export interface User {
   id: string
   email: string
+  first_name: string | null
+  last_name: string | null
   role: UserRole
   kyc_status: KycStatus
   created_at: string

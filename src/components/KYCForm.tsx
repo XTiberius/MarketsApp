@@ -7,15 +7,17 @@ import type { KycStatus } from '@/lib/types'
 interface Props {
   userId: string
   kycStatus: KycStatus
+  firstName?: string | null
+  lastName?: string | null
 }
 
-export function KYCForm({ kycStatus }: Props) {
+export function KYCForm({ kycStatus, firstName, lastName }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState({
-    first_name: '',
-    last_name: '',
+    first_name: firstName ?? '',
+    last_name: lastName ?? '',
     dob: '',
     address: '',
     phone: '',

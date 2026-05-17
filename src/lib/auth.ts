@@ -37,6 +37,9 @@ export async function getServerUser(): Promise<User | null> {
 export async function requireAuth(): Promise<User> {
   const user = await getServerUser()
   if (!user) redirect('/auth/login')
+  // Logged-in users without a name finish their profile first. /listings and
+  // other public routes don't call requireAuth, so they stay accessible.
+  if (!user.first_name || !user.last_name) redirect('/auth/complete-profile')
   return user
 }
 

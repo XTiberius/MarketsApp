@@ -6,6 +6,10 @@ import { SignOutButton } from '@/components/SignOutButton'
 export async function Navbar() {
   const user = await getServerUser()
 
+  const profileLabel = user?.first_name
+    ? `${user.first_name} ${user.last_name ?? ''}`.trim()
+    : 'Profile'
+
   return (
     <header className="border-b border-border bg-background sticky top-0 z-40">
       <nav className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
@@ -30,8 +34,8 @@ export async function Navbar() {
               </Link>
               <Link
                 href="/profile"
-                aria-label="Profile"
-                title="Profile"
+                aria-label={profileLabel}
+                title={profileLabel}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <User className="h-5 w-5" />

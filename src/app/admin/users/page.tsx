@@ -29,9 +29,13 @@ export default async function AdminUsersPage() {
           {users.map((user: User) => (
             <div key={user.id} className="p-4 flex items-center justify-between hover:bg-muted/40">
               <div>
-                <p className="font-medium">{user.email}</p>
+                <p className="font-medium">
+                  {user.first_name || user.last_name
+                    ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim()
+                    : '— no name'}
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  {user.role} · Joined {formatDate(user.created_at)}
+                  {user.email} · {user.role} · Joined {formatDate(user.created_at)}
                 </p>
               </div>
               <span className={`text-xs border rounded px-2 py-0.5 ${STATUS_STYLES[user.kyc_status]}`}>
