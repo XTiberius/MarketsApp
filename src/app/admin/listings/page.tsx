@@ -2,6 +2,7 @@ import { requireAdmin } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import Link from 'next/link'
 import { formatDate } from '@/lib/utils'
+import { DeleteListingButton } from '@/components/DeleteListingButton'
 import type { Listing } from '@/lib/types'
 
 export default async function AdminListingsPage() {
@@ -53,6 +54,10 @@ export default async function AdminListingsPage() {
                 >
                   Edit
                 </Link>
+                <DeleteListingButton
+                  listingId={listing.id}
+                  companyName={listing.company_name}
+                />
               </div>
             </div>
           ))}
