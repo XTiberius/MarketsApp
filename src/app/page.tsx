@@ -1,6 +1,9 @@
 import Link from 'next/link'
+import { getServerUser } from '@/lib/auth'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const user = await getServerUser()
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] px-4 text-center">
       <h1 className="text-4xl font-bold tracking-tight mb-4">
@@ -17,12 +20,14 @@ export default function HomePage() {
         >
           Browse Listings
         </Link>
-        <Link
-          href="/auth/login"
-          className="px-6 py-3 rounded-lg border border-border font-medium hover:bg-muted transition-colors"
-        >
-          Sign In
-        </Link>
+        {!user && (
+          <Link
+            href="/auth/login"
+            className="px-6 py-3 rounded-lg border border-border font-medium hover:bg-muted transition-colors"
+          >
+            Sign In
+          </Link>
+        )}
       </div>
     </div>
   )
