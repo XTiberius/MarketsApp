@@ -1,0 +1,32 @@
+-- 003_fix_users_table_grants.sql
+--
+-- Symptom:
+--   [getServerUser] profile query failed: "permission denied for table users"
+--
+-- Diagnosis:
+--   "permission denied for table" is a GRANT error, NOT an RLS error.
+--   PostgreSQL enforces table access in two separate, ordered layers:
+--     1. Table privileges (GRANT/REVOKE) — may the role touch the table at all?
+--     2. Row Level Security policies     — which rows may it see, once allowed?
+--   Layer 1 is checked FIRST. The `authenticated` role has no SELECT grant on
+--   public.users, so the query is rejected before any RLS policy is evaluated.
+--   Recreating or loosening an RLS policy therefore cannot fix this error —
+--   RLS only ever filters rows; it never grants table access.
+--
+--   Migration 001 created public.users but issued no GRANTs — it relied on
+--   Supabase's default privileges, which did not apply to this table. Other
+--   tables work because they received those grants; public.users did not.
+--
+-- Fix:
+--   Restore the table-level privileges the app needs. RLS stays enabled and
+--   the existing policies are unchanged — they still gate exactly which rows
+--   each role can read ("Users: view own profile" / "Admins: view all users")
+--   and update ("Admins: update users").
+
+grant select, update on table public.users to authenticated;
+
+-- Verify afterward — `authenticated` should now appear with SELECT and UPDATE:
+--   select grantee, privilege_type
+--   from information_schema.role_table_grants
+--   where table_schema = 'public' and table_name = 'users'
+--   order by grantee, privilege_type;
