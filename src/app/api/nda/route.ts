@@ -1,21 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
+// Records an NDA signature for the signed-in investor on a listing.
+// This does NOT create a bid — placing a bid is a separate flow (/api/bids).
 export async function POST(req: NextRequest) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { bid_id, signature_image } = await req.json()
+  const { listing_id, signature_image } = await req.json().catch(() => ({}))
 
-  if (!bid_id || !signature_image) {
-    return NextResponse.json({ error: 'bid_id and signature_image are required' }, { status: 400 })
+  if (!listing_id || !signature_image) {
+    return NextResponse.json(
+      { error: 'listing_id and signature_image are required' },
+      { status: 400 }
+    )
   }
 
-  // Upload signature image to Supabase Storage
-  const buffer = Buffer.from(signature_image.split(',')[1], 'base64')
-  const filePath = `signatures/${bid_id}/${Date.now()}.png`
+  // The signature arrives as a data URL (data:image/png;base64,XXXX).
+  const base64 = String(signature_image).split(',')[1]
+  if (!base64) {
+    return NextResponse.json({ error: 'Invalid signature image' }, { status: 400 })
+  }
+
+  const buffer = Buffer.from(base64, 'base64')
+  const filePath = `${user.id}/${listing_id}/${Date.now()}.png`
 
   const { error: uploadError } = await supabase.storage
     .from('signatures')
@@ -25,20 +35,14 @@ export async function POST(req: NextRequest) {
 
   const { data: { publicUrl } } = supabase.storage.from('signatures').getPublicUrl(filePath)
 
-  // Record NDA signature
+  // One signature per investor per listing (enforced by the unique constraint).
   const { error: sigError } = await supabase.from('nda_signatures').insert({
-    bid_id,
+    investor_id: user.id,
+    listing_id,
     signature_image_url: publicUrl,
-    signed_at: new Date().toISOString(),
   })
 
   if (sigError) return NextResponse.json({ error: sigError.message }, { status: 400 })
 
-  // Mark bid as NDA signed
-  await supabase
-    .from('bids')
-    .update({ nda_signed: true, nda_signed_at: new Date().toISOString() })
-    .eq('id', bid_id)
-
-  return NextResponse.json({ message: 'NDA signed successfully' })
+  return NextResponse.json({ message: 'NDA signed successfully' }, { status: 201 })
 }

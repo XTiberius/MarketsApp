@@ -21,39 +21,25 @@ export function NDAModal({ listingId, ndaText }: Props) {
     setLoading(true)
     setError(null)
 
-    // 1. Create a bid record (which triggers NDA flow)
-    const bidRes = await fetch('/api/bids', {
+    // Record the NDA signature only — no bid is created here.
+    // Placing a bid is a separate flow (BidModal → /api/bids).
+    const res = await fetch('/api/nda', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ listing_id: listingId, amount: 0, nda_only: true }),
+      body: JSON.stringify({ listing_id: listingId, signature_image: signature }),
     })
 
-    if (!bidRes.ok) {
-      const d = await bidRes.json()
-      setError(d.error ?? 'Failed to create bid')
-      setLoading(false)
-      return
-    }
-
-    const bid = await bidRes.json()
-
-    // 2. Record NDA signature
-    const ndaRes = await fetch('/api/nda', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bid_id: bid.id, signature_image: signature }),
-    })
-
-    if (!ndaRes.ok) {
-      const d = await ndaRes.json()
-      setError(d.error ?? 'Failed to record signature')
+    if (!res.ok) {
+      const d = await res.json().catch(() => null)
+      setError(d?.error ?? 'Failed to record signature')
       setLoading(false)
       return
     }
 
     setSuccess(true)
     setLoading(false)
-    // Refresh the page to show unlocked content
+    // Refresh so the page re-renders with confidential fields unlocked
+    // and the Place Bid button visible.
     setTimeout(() => window.location.reload(), 1500)
   }
 

@@ -23,16 +23,16 @@ export default async function ListingDetailPage({ params }: Props) {
 
   if (!listing) notFound()
 
-  // Check if investor has signed the NDA for this listing
+  // Check if the investor has signed the NDA for this listing
   let ndaSigned = false
   if (user) {
-    const { data: bid } = await supabase
-      .from('bids')
-      .select('nda_signed')
+    const { data: nda } = await supabase
+      .from('nda_signatures')
+      .select('id')
       .eq('investor_id', user.id)
       .eq('listing_id', id)
-      .single()
-    ndaSigned = bid?.nda_signed ?? false
+      .maybeSingle()
+    ndaSigned = !!nda
   }
 
   return (

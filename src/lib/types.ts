@@ -96,7 +96,8 @@ export interface AssociatedDocument {
 
 export interface NdaSignature {
   id: string
-  bid_id: string
+  investor_id: string
+  listing_id: string
   signature_image_url: string
   signed_at: string
 }
