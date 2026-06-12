@@ -13,6 +13,7 @@ Behavioral guidelines to reduce common LLM coding mistakes. Merge with project-s
 - **Roles:** `investor` | `admin`
 - **Key flows:** Browse listings → Sign NDA → Place bid → Admin reviews bid → Documents uploaded
 
+<!-- BEGIN:brain:coding-discipline v1 — managed by ~/Brain; do not edit here, propose changes in the Brain -->
 ## 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
@@ -72,3 +73,15 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+<!-- END:brain:coding-discipline -->
+
+<!-- BEGIN:brain:agent-wiring v1 — managed by ~/Brain; do not edit here, propose changes in the Brain -->
+# Brain operator
+
+This repo is **overseen by the Brain operator** (`~/Brain`). Sections fenced by
+`BEGIN:brain:<process>` / `END:brain:<process>` markers (and `# >>> brain:* >>>` fences in
+config files) are **managed**: do not edit them in place — propose changes in the Brain
+(`~/Brain/operations/processes/`), where they are versioned and redeployed to all overseen
+repos. If a managed section looks stale, hand-edited, or wrong, tell the user to run the
+Brain's audit ("audit projects" — the `operate` skill).
+<!-- END:brain:agent-wiring -->
