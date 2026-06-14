@@ -94,8 +94,11 @@ fetching is server components + `fetch()` mutations).
 ### 4.4 Auth & session
 - Supabase email OTP. Browser + server clients in `src/lib/supabase*.ts`; guards in
   `src/lib/auth.ts` (`getServerUser`, `requireAuth`, `requireAdmin`, `requireKycApproved`).
-- **`src/proxy.ts`** holds the session-refresh middleware logic **but is not wired** — there is no
-  `src/middleware.ts`, so session refresh is currently inactive. (See LAUNCH P0.)
+- **`src/proxy.ts`** is the session-refresh middleware and **is correctly wired & active.**
+  Next.js 16 **renamed Middleware → Proxy**: a `proxy.ts` beside `app/` (here `src/proxy.ts`)
+  exporting a named `proxy` function + `config` matcher *is* the convention — no `middleware.ts`
+  exists or is needed (that name is deprecated). Runtime is `nodejs` (required by `@supabase/ssr`).
+  Verified against `@supabase/ssr` 0.10.3 (`setAll(cookiesToSet, headers)` 2-arg contract).
 
 ### 4.5 Storage (Supabase buckets, RLS via migrations 008/009)
 - **logos** (public), **signatures** (private; `{investor}/{listing}/*.png`; investor writes own,
@@ -111,7 +114,6 @@ fetching is server components + `fetch()` mutations).
 **create**, KYC **submit**, storage policies, code/schema in sync (no drift).
 
 **Known gaps** (→ tracked in [`LAUNCH.md`](./LAUNCH.md)):
-- Session middleware not wired (`proxy.ts` → needs `middleware.ts`).
 - Admin **KYC approve/reject UI** missing (endpoint exists).
 - Admin **listing-edit** form stubbed.
 - Admin **document-upload UI** missing (backend ready).
@@ -123,6 +125,9 @@ in-progress server-side auth refactor uncommitted (login/verify/logout moving to
 Get to a clean, pushed state before feature work (LAUNCH P0).
 
 ## 6. Operating notes
+- **Next.js 16 gotcha:** middleware was renamed to **proxy** — `src/proxy.ts` is correct; never
+  add a `middleware.ts`. When in doubt about Next 16 conventions, read
+  `node_modules/next/dist/docs/` (per `AGENTS.md`), don't assume Next-15 behavior.
 - This repo is overseen by the **Brain operator** (`~/Brain`); `brain:*` marker blocks in
   `CLAUDE.md` / `AGENTS.md` / `.gitignore` are managed — edit them in the Brain, not here.
 - Security protocol applies: never read/print/commit secrets (`.env.local`, keys). See `AGENTS.md`.

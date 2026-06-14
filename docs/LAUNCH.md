@@ -17,9 +17,10 @@
 
 - [ ] **Repo to a clean state** — finish/validate the in-progress server-side auth refactor;
   commit + push the WIP and the 13 unpushed commits so `main` is known-good. `[critical→in-session]`
-- [ ] **Wire session middleware** — add `src/middleware.ts` re-exporting `src/proxy.ts`; verify
-  login → verify-code → complete-profile → logout and session refresh work end-to-end. (User
-  believes auth is configured — confirm; fix only the wiring gap, don't rebuild.) `[critical→in-session]`
+- [~] **Verify auth/session** — `src/proxy.ts` is already the active Next-16 middleware-equivalent
+  (Next 16 renamed Middleware→Proxy); session refresh is live, **no `middleware.ts` needed**. The
+  server-side auth refactor (login/verify/logout via API routes) is complete & coherent. Confirm
+  via `tsc`/build + dev smoke + one real OTP login end-to-end. `[critical→in-session]`
 - [ ] **Admin KYC approve/reject UI** — buttons + notes on `/admin/users`, wired to the existing
   `PATCH /api/users`. Unblocks the whole investor path (no bid without approved KYC). `[critical→in-session]`
 - [ ] **Migrations applied to prod Supabase** — confirm 001–009 (esp. once-untracked 002 & 009)
