@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ListingType, ListingStatus } from '@/lib/types'
+import { isValidHttpUrl } from '@/lib/utils'
 
 type FormState = {
   company_name: string
@@ -56,6 +57,15 @@ export function NewListingForm() {
     const nextErrors: Partial<Record<keyof FormState, string>> = {}
     for (const field of REQUIRED_FIELDS) {
       if (!form[field].trim()) nextErrors[field] = 'This field is required'
+    }
+    if (form.logo_url.trim() && !isValidHttpUrl(form.logo_url.trim())) {
+      nextErrors.logo_url = 'Enter a full URL starting with https:// (or leave blank)'
+    }
+    for (const field of ['valuation', 'amount_raised'] as const) {
+      const v = form[field].trim()
+      if (v && (!Number.isFinite(Number(v)) || Number(v) < 0)) {
+        nextErrors[field] = 'Enter a non-negative number'
+      }
     }
     setErrors(nextErrors)
     if (Object.keys(nextErrors).length > 0) return
@@ -183,6 +193,9 @@ export function NewListingForm() {
           placeholder="https://…"
           className={inputClass}
         />
+        {errors.logo_url && (
+          <p className="text-xs text-red-600 mt-1">{errors.logo_url}</p>
+        )}
       </div>
 
       <div>
@@ -223,6 +236,9 @@ export function NewListingForm() {
               onChange={(e) => update('valuation', e.target.value)}
               className={inputClass}
             />
+            {errors.valuation && (
+              <p className="text-xs text-red-600 mt-1">{errors.valuation}</p>
+            )}
           </div>
           <div>
             <label htmlFor="amount_raised" className="block text-sm font-medium mb-1">
@@ -236,6 +252,9 @@ export function NewListingForm() {
               onChange={(e) => update('amount_raised', e.target.value)}
               className={inputClass}
             />
+            {errors.amount_raised && (
+              <p className="text-xs text-red-600 mt-1">{errors.amount_raised}</p>
+            )}
           </div>
         </div>
 

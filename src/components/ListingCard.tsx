@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Image from 'next/image'
+import { ListingLogo } from './ListingLogo'
 import type { ListingPublic } from '@/lib/types'
 
 interface Props {
@@ -13,19 +13,7 @@ export function ListingCard({ listing }: Props) {
       className="group block rounded-lg border border-border hover:border-foreground/30 hover:shadow-sm transition-all overflow-hidden"
     >
       <div className="h-12 bg-muted flex items-center px-4">
-        {listing.logo_url ? (
-          <Image
-            src={listing.logo_url}
-            alt={`${listing.company_name} logo`}
-            width={80}
-            height={32}
-            className="h-8 w-auto object-contain"
-          />
-        ) : (
-          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            {listing.company_name.slice(0, 2)}
-          </span>
-        )}
+        <ListingLogo logoUrl={listing.logo_url} companyName={listing.company_name} />
       </div>
 
       <div className="p-4 space-y-2">
