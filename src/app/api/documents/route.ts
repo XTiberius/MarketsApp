@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   }
 
   const fileExt = file.name.split('.').pop()
-  const filePath = `documents/${bid_id}/${Date.now()}.${fileExt}`
+  const filePath = `${bid_id}/${Date.now()}.${fileExt}`
 
   const { error: uploadError } = await supabase.storage
     .from('documents')

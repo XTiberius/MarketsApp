@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { requireKycApproved } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -30,7 +31,7 @@ export default async function BidsPage() {
       {!bids || bids.length === 0 ? (
         <p className="text-muted-foreground">
           You haven&apos;t placed any bids yet.{' '}
-          <a href="/listings" className="underline text-foreground">Browse listings</a>
+          <Link href="/listings" className="underline text-foreground">Browse listings</Link>
         </p>
       ) : (
         <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
