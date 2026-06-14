@@ -72,3 +72,7 @@ secrets.yml
 *.token
 *_token
 # <<< brain:security-protocol <<<
+
+# Supabase CLI local state (machine-local; never commit — may hold connection details)
+supabase/.temp
+supabase/.branches
