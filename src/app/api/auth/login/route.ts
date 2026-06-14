@@ -18,5 +18,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
-  return NextResponse.json({ message: 'OTP sent' })
+  const response = NextResponse.json({ message: 'OTP sent' })
+  response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0')
+  response.headers.set('Expires', '0')
+  response.headers.set('Pragma', 'no-cache')
+  return response
 }

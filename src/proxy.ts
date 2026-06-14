@@ -12,7 +12,7 @@ export async function proxy(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet, headers) {
           // Write updated cookies to both the request and the response so
           // the refreshed session is available to Server Components downstream.
           cookiesToSet.forEach(({ name, value }) =>
@@ -21,6 +21,9 @@ export async function proxy(request: NextRequest) {
           supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
+          )
+          Object.entries(headers).forEach(([key, value]) =>
+            supabaseResponse.headers.set(key, value)
           )
         },
       },

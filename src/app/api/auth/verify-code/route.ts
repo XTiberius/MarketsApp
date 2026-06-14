@@ -19,5 +19,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
-  return NextResponse.json({ user: data.user })
+  const response = NextResponse.json({ user: data.user })
+  response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate, max-age=0')
+  response.headers.set('Expires', '0')
+  response.headers.set('Pragma', 'no-cache')
+  return response
 }

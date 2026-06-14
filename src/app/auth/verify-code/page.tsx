@@ -1,24 +1,28 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useSyncExternalStore } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase-browser'
+
+function subscribeToSessionStorage() {
+  return () => {}
+}
+
+function getStoredOtpEmail() {
+  if (typeof window === 'undefined') return ''
+  return sessionStorage.getItem('otp_email') ?? ''
+}
 
 export default function VerifyCodePage() {
   const [code, setCode] = useState('')
-  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
+  const email = useSyncExternalStore(subscribeToSessionStorage, getStoredOtpEmail, () => '')
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('otp_email')
-    if (!stored) {
+    if (!sessionStorage.getItem('otp_email')) {
       router.replace('/auth/login')
-      return
     }
-    setEmail(stored)
   }, [router])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -26,20 +30,29 @@ export default function VerifyCodePage() {
     setLoading(true)
     setError(null)
 
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token: code,
-      type: 'email',
-    })
+    const storedEmail = email || sessionStorage.getItem('otp_email') || ''
+    if (!storedEmail) {
+      setLoading(false)
+      router.replace('/auth/login')
+      return
+    }
 
-    if (error) {
-      setError(error.message)
+    const response = await fetch('/api/auth/verify-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: storedEmail, token: code }),
+    })
+    const result = await response.json().catch(() => null)
+
+    if (!response.ok) {
+      setError(result?.error ?? 'Unable to verify code')
       setLoading(false)
       return
     }
 
     sessionStorage.removeItem('otp_email')
-    router.push('/listings')
+    router.replace('/listings')
+    router.refresh()
   }
 
   return (
@@ -48,7 +61,7 @@ export default function VerifyCodePage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold">Enter your code</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            We sent a 6-digit code to <strong>{email}</strong>
+            We sent a 6-digit code to <strong>{email || 'your email'}</strong>
           </p>
         </div>
 
