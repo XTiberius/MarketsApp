@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { getServerUser } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { BidModal } from '@/components/BidModal'
 import { NDAModal } from '@/components/NDAModal'
@@ -11,8 +11,8 @@ interface Props {
 
 export default async function ListingDetailPage({ params }: Props) {
   const { id } = await params
+  const user = await requireAuth()
   const supabase = await createServerSupabaseClient()
-  const user = await getServerUser()
 
   const { data: listing } = await supabase
     .from('listings')
@@ -24,16 +24,13 @@ export default async function ListingDetailPage({ params }: Props) {
   if (!listing) notFound()
 
   // Check if the investor has signed the NDA for this listing
-  let ndaSigned = false
-  if (user) {
-    const { data: nda } = await supabase
-      .from('nda_signatures')
-      .select('id')
-      .eq('investor_id', user.id)
-      .eq('listing_id', id)
-      .maybeSingle()
-    ndaSigned = !!nda
-  }
+  const { data: nda } = await supabase
+    .from('nda_signatures')
+    .select('id')
+    .eq('investor_id', user.id)
+    .eq('listing_id', id)
+    .maybeSingle()
+  const ndaSigned = !!nda
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
@@ -75,18 +72,12 @@ export default async function ListingDetailPage({ params }: Props) {
           <p className="text-sm font-medium">
             Sign the NDA to unlock valuation, deal terms, and financial details
           </p>
-          {user ? (
-            <NDAModal listingId={listing.id} ndaText={listing.nda_text} />
-          ) : (
-            <a href="/auth/login" className="text-sm underline text-foreground">
-              Sign in to view details
-            </a>
-          )}
+          <NDAModal listingId={listing.id} ndaText={listing.nda_text} />
         </div>
       )}
 
       {/* Bid CTA */}
-      {user && ndaSigned && (
+      {ndaSigned && (
         <BidModal listingId={listing.id} companyName={listing.company_name} />
       )}
     </div>

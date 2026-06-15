@@ -1,8 +1,10 @@
+import { requireAuth } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { ListingCard } from '@/components/ListingCard'
 import type { ListingPublic } from '@/lib/types'
 
 export default async function ListingsPage() {
+  await requireAuth()
   const supabase = await createServerSupabaseClient()
 
   const { data: listings } = await supabase

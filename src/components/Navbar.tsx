@@ -18,12 +18,11 @@ export async function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4 text-sm">
-          <Link href="/listings" className="text-muted-foreground hover:text-foreground transition-colors">
-            Listings
-          </Link>
-
           {user ? (
             <>
+              <Link href="/listings" className="text-muted-foreground hover:text-foreground transition-colors">
+                Listings
+              </Link>
               {user.role === 'admin' && (
                 <Link href="/admin/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
                   Admin

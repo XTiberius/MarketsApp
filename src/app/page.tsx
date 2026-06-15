@@ -14,13 +14,14 @@ export default async function HomePage() {
         Accredited investors only.
       </p>
       <div className="flex gap-4">
-        <Link
-          href="/listings"
-          className="px-6 py-3 rounded-lg bg-foreground text-background font-medium hover:opacity-90 transition-opacity"
-        >
-          Browse Listings
-        </Link>
-        {!user && (
+        {user ? (
+          <Link
+            href="/listings"
+            className="px-6 py-3 rounded-lg bg-foreground text-background font-medium hover:opacity-90 transition-opacity"
+          >
+            Browse Listings
+          </Link>
+        ) : (
           <Link
             href="/auth/login"
             className="px-6 py-3 rounded-lg border border-border font-medium hover:bg-muted transition-colors"
