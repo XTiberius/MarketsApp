@@ -15,18 +15,14 @@
 
 ## P0 — blocks a working launch
 
-- [ ] **Repo to a clean state** — finish/validate the in-progress server-side auth refactor;
-  commit + push the WIP and the 13 unpushed commits so `main` is known-good. `[critical→in-session]`
-- [~] **Verify auth/session** — `src/proxy.ts` is already the active Next-16 middleware-equivalent
-  (Next 16 renamed Middleware→Proxy); session refresh is live, **no `middleware.ts` needed**. The
-  server-side auth refactor (login/verify/logout via API routes) is complete & coherent. Confirm
-  via `tsc`/build + dev smoke + one real OTP login end-to-end. `[critical→in-session]`
-- [ ] **Admin KYC approve/reject UI** — buttons + notes on `/admin/users`, wired to the existing
-  `PATCH /api/users`. Unblocks the whole investor path (no bid without approved KYC). `[critical→in-session]`
-- [ ] **Migrations applied to prod Supabase** — confirm 001–009 (esp. once-untracked 002 & 009)
-  are applied; prod DB == repo schema. `[critical→in-session]`
-- [ ] **Migration 010: `kyc_entity` admin-UPDATE RLS** — add the missing policy mirroring
-  `kyc_individual`. `[grunt→Codex]`
+- [x] **Repo to a clean state** — server-side auth refactor validated; WIP + backlog committed and pushed. `[critical→in-session]`
+- [x] **Verify auth/session** — `src/proxy.ts` is the active Next-16 middleware-equivalent
+  (Middleware→Proxy); session refresh live, no `middleware.ts`. Build/smoke/real-login confirmed. `[critical→in-session]`
+- [x] **Admin KYC approve/reject UI** — `AdminKycManagement` on `/admin/users`: applicant detail
+  panel + Approve + Reject-with-required-reason → `PATCH /api/users`. (Codex-built, reviewed in-session.) `[grunt→Codex]`
+- [x] **Migrations applied to prod Supabase** — Supabase CLI linked; 001–009 baselined; migration
+  010 (grants reconcile) pushed. Supabase changes are now hands-off via `supabase db push`. `[critical→in-session]`
+- [x] **Migration 010: `kyc_entity` admin-UPDATE RLS** — included in 010 and pushed. `[grunt→Codex]`
 - [ ] **Deploy** — create the Vercel project, set env vars, connect the repo, ship a first build. `[critical→in-session]`
 
 ## P1 — needed for a real (even beta) launch
@@ -44,8 +40,10 @@
 
 ## P2 — fast-follow / post-launch OK
 
-- [ ] **Smoke tests + minimal CI** — happy-path tests for auth / NDA / bid; GitHub Action running
-  lint + typecheck + build on push. `[grunt→Codex]`
+- [x] **e2e tests + minimal CI** — Playwright (public / investor / admin projects) + GitHub Actions
+  (lint + typecheck + build). Public suite passes 3/3; **authed/admin specs run once
+  `SUPABASE_SERVICE_ROLE_KEY` is set in the local env file** (admin-bypass seeding). e2e-in-CI is a
+  documented fast-follow. (Codex-built, reviewed in-session.) `[grunt→Codex]`
 - [ ] **Accessibility + monitoring + seed** — ARIA/alt labels pass; Sentry error tracking; a seed
   script for demo data. `[grunt→Codex]`
 - [ ] **Wire TanStack Query** — it's configured but unused; optional cleanup/consistency. `[grunt→Codex]`
