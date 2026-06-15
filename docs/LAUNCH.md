@@ -23,7 +23,10 @@
 - [x] **Migrations applied to prod Supabase** — Supabase CLI linked; 001–009 baselined; migration
   010 (grants reconcile) pushed. Supabase changes are now hands-off via `supabase db push`. `[critical→in-session]`
 - [x] **Migration 010: `kyc_entity` admin-UPDATE RLS** — included in 010 and pushed. `[grunt→Codex]`
-- [ ] **Deploy** — create the Vercel project, set env vars, connect the repo, ship a first build. `[critical→in-session]`
+- [x] **Deploy** — live on Vercel (Git-integration, auto-deploy on `main`); domain
+  `www.ionicmarkets.com` (apex 308→www) via GoDaddy DNS, valid HTTPS. Supabase Site URL +
+  redirect allow-list point at the prod domain. Real OTP login verified end-to-end →
+  `/listings`. `[critical→in-session]`
 
 ## P1 — needed for a real (even beta) launch
 
