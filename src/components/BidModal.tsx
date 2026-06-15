@@ -52,6 +52,7 @@ export function BidModal({ listingId, companyName }: Props) {
     return (
       <button
         onClick={() => setOpen(true)}
+        data-testid="bid-open-button"
         className="w-full py-3 rounded-lg bg-foreground text-background font-medium hover:opacity-90 transition-opacity"
       >
         Place Bid
@@ -61,7 +62,10 @@ export function BidModal({ listingId, companyName }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-sm bg-background rounded-xl border border-border p-6 space-y-4 shadow-xl">
+      <div
+        data-testid="bid-modal"
+        className="w-full max-w-sm bg-background rounded-xl border border-border p-6 space-y-4 shadow-xl"
+      >
         {success ? (
           <div className="text-center space-y-3">
             <p className="font-semibold text-lg">Bid placed!</p>
@@ -69,7 +73,11 @@ export function BidModal({ listingId, companyName }: Props) {
               Your bid on <strong>{companyName}</strong> has been submitted. The team will be in touch.
             </p>
             <button
-              onClick={() => { setOpen(false); setSuccess(false); setAmount('') }}
+              onClick={() => {
+                setOpen(false)
+                setSuccess(false)
+                setAmount('')
+              }}
               className="w-full py-2 rounded-lg border border-border text-sm hover:bg-muted"
             >
               Close
@@ -112,6 +120,7 @@ export function BidModal({ listingId, companyName }: Props) {
                 <button
                   type="submit"
                   disabled={loading}
+                  data-testid="bid-submit-button"
                   className="flex-1 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 disabled:opacity-50"
                 >
                   {loading ? 'Submitting…' : 'Submit Bid'}

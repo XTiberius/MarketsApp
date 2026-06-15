@@ -73,6 +73,7 @@ export function AdminBidManagement({ bids: initialBids }: Props) {
                       key={next}
                       onClick={() => updateStatus(bid.id, next)}
                       disabled={updating === bid.id}
+                      data-testid={`admin-bid-status-${next}`}
                       className="text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:opacity-50 capitalize"
                     >
                       {next.replace(/_/g, ' ')}

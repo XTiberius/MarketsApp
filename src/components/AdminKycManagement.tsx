@@ -108,6 +108,7 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
                 <button
                   onClick={() => setExpanded(isExpanded ? null : user.id)}
                   disabled={updating !== null}
+                  data-testid="admin-kyc-review-toggle"
                   className="text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:opacity-50"
                 >
                   {isExpanded ? 'Collapse' : 'Review'}
@@ -154,6 +155,7 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
                       <button
                         onClick={() => updateStatus(user.id, 'approved')}
                         disabled={updating !== null}
+                        data-testid="admin-kyc-approve-button"
                         className="text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:opacity-50"
                       >
                         Approve
@@ -161,6 +163,7 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
                       <button
                         onClick={() => setRejecting(user.id)}
                         disabled={updating !== null}
+                        data-testid="admin-kyc-reject-button"
                         className="text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:opacity-50"
                       >
                         Reject
@@ -178,12 +181,14 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
                             }))
                           }
                           disabled={updating !== null}
+                          data-testid="admin-kyc-reject-reason"
                           className="w-full min-h-24 rounded border border-border bg-background px-3 py-2 text-sm disabled:opacity-50"
                           placeholder="Reason for rejection"
                         />
                         <button
                           onClick={() => updateStatus(user.id, 'rejected', rejectReason.trim())}
                           disabled={updating !== null || rejectReason.trim().length === 0}
+                          data-testid="admin-kyc-confirm-reject-button"
                           className="text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:opacity-50"
                         >
                           Confirm rejection

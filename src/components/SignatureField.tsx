@@ -70,6 +70,7 @@ export function SignatureField({ onChange }: Props) {
     <div className="space-y-2">
       <canvas
         ref={canvasRef}
+        data-testid="signature-canvas"
         width={400}
         height={150}
         className="w-full border border-border rounded-lg cursor-crosshair touch-none bg-white"

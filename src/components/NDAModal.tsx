@@ -47,6 +47,7 @@ export function NDAModal({ listingId, ndaText }: Props) {
     return (
       <button
         onClick={() => setOpen(true)}
+        data-testid="nda-open-button"
         className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity"
       >
         Sign NDA to Unlock
@@ -56,7 +57,10 @@ export function NDAModal({ listingId, ndaText }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div className="w-full max-w-lg bg-background rounded-xl border border-border shadow-xl flex flex-col max-h-[90vh]">
+      <div
+        data-testid="nda-modal"
+        className="w-full max-w-lg bg-background rounded-xl border border-border shadow-xl flex flex-col max-h-[90vh]"
+      >
         <div className="p-6 border-b border-border">
           <h2 className="font-semibold text-lg">Non-Disclosure Agreement</h2>
           <p className="text-sm text-muted-foreground mt-1">
@@ -101,6 +105,7 @@ export function NDAModal({ listingId, ndaText }: Props) {
               <button
                 onClick={handleSign}
                 disabled={!signature || !agreed || loading}
+                data-testid="nda-submit-button"
                 className="flex-1 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 disabled:opacity-50"
               >
                 {loading ? 'Signing…' : 'Sign NDA'}
