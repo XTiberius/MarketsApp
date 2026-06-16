@@ -1,26 +1,190 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   IONIC — Liquid Glass / Purple Space design tokens
+   Colors are stored as HSL *channels* (e.g. "263 80% 65%") so components can
+   apply precise alpha with hsl(var(--token) / <a>). Light = :root, dark = .dark
+   (next-themes class strategy; dark is the default theme).
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* core surfaces — light ("dawn lavender") */
+  --background: 264 50% 98%;
+  --foreground: 258 38% 13%;
+  --card: 0 0% 100%;
+  --card-foreground: 258 38% 13%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 258 38% 13%;
+  --muted: 264 30% 94%;
+  --muted-foreground: 258 14% 40%;
+  --primary: 263 70% 53%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 264 30% 92%;
+  --secondary-foreground: 258 38% 18%;
+  --accent: 290 70% 52%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 350 75% 48%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 264 28% 87%;
+  --input: 264 28% 89%;
+  --ring: 263 70% 58%;
+
+  /* color-coded status palette (legible on light glass) */
+  --type-primary: 263 70% 50%;   /* listing primary  → violet */
+  --type-secondary: 190 85% 36%; /* listing secondary→ cyan   */
+  --success: 152 65% 34%;        /* published / approved / invested */
+  --warning: 36 92% 40%;         /* pending / awaiting_payment */
+  --danger: 350 75% 48%;         /* closed / rejected */
+  --info: 217 80% 48%;           /* accepted */
+  --neutral: 250 10% 42%;        /* draft / placed / default */
+
+  /* glass + atmosphere — light */
+  --glass-bg: 264 60% 100%;
+  --glass-bg-alpha: 0.62;
+  --glass-border: 263 50% 50%;
+  --glass-border-alpha: 0.16;
+  --glass-highlight: 0 0% 100%;
+  --glass-shadow: 0 8px 40px -10px hsl(263 50% 55% / 0.28);
+  --blur: 16px;
+
+  --space-1: 264 85% 93%;
+  --space-2: 290 75% 93%;
+  --space-3: 220 85% 95%;
+  --star: 263 50% 45%;
+  --star-alpha: 0.22;
+
+  --radius: 0.85rem;
 }
 
+.dark {
+  /* core surfaces — dark ("deep space") */
+  --background: 258 44% 6%;
+  --foreground: 250 30% 96%;
+  --card: 258 40% 10%;
+  --card-foreground: 250 30% 96%;
+  --popover: 258 42% 9%;
+  --popover-foreground: 250 30% 96%;
+  --muted: 257 25% 16%;
+  --muted-foreground: 250 16% 66%;
+  --primary: 263 82% 67%;
+  --primary-foreground: 258 60% 8%;
+  --secondary: 257 28% 18%;
+  --secondary-foreground: 250 30% 92%;
+  --accent: 290 85% 68%;
+  --accent-foreground: 258 60% 8%;
+  --destructive: 350 82% 62%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 257 30% 22%;
+  --input: 257 30% 20%;
+  --ring: 263 85% 72%;
+
+  /* color-coded status palette (vibrant on dark glass) */
+  --type-primary: 263 85% 74%;
+  --type-secondary: 190 90% 62%;
+  --success: 152 70% 56%;
+  --warning: 40 95% 64%;
+  --danger: 350 90% 70%;
+  --info: 217 90% 68%;
+  --neutral: 250 14% 64%;
+
+  /* glass + atmosphere — dark */
+  --glass-bg: 258 50% 14%;
+  --glass-bg-alpha: 0.5;
+  --glass-border: 263 60% 78%;
+  --glass-border-alpha: 0.16;
+  --glass-highlight: 0 0% 100%;
+  --glass-shadow: 0 10px 50px -12px hsl(263 80% 25% / 0.65);
+  --blur: 16px;
+
+  --space-1: 263 62% 16%;
+  --space-2: 290 58% 14%;
+  --space-3: 222 64% 11%;
+  --star: 0 0% 100%;
+  --star-alpha: 0.85;
+}
+
+/* ---- wire tokens to Tailwind v4 utilities ---- */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-type-primary: hsl(var(--type-primary));
+  --color-type-secondary: hsl(var(--type-secondary));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-danger: hsl(var(--danger));
+  --color-info: hsl(var(--info));
+  --color-neutral: hsl(var(--neutral));
+
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.4rem);
+  --radius-2xl: calc(var(--radius) + 0.8rem);
+
   --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-space-grotesk);
   --font-mono: var(--font-geist-mono);
+
+  --animate-nebula: nebula-drift 28s ease-in-out infinite alternate;
+  --animate-twinkle: twinkle 4s ease-in-out infinite;
+  --animate-accordion-down: accordion-down 0.25s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes nebula-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(2%, -2%, 0) scale(1.08); }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
+}
+@keyframes accordion-down {
+  from { height: 0; }
+  to   { height: var(--radix-accordion-content-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to   { height: 0; }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- reusable liquid-glass surface ---- */
+@utility glass {
+  background-color: hsl(var(--glass-bg) / var(--glass-bg-alpha));
+  backdrop-filter: blur(var(--blur)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
+  border: 1px solid hsl(var(--glass-border) / var(--glass-border-alpha));
+  box-shadow: var(--glass-shadow), inset 0 1px 0 0 hsl(var(--glass-highlight) / 0.12);
+}
+
+/* respect reduced-motion globally for our keyframe utilities */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

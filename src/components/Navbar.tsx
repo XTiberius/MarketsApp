@@ -1,54 +1,63 @@
 import Link from 'next/link'
 import { User } from 'lucide-react'
 import { getServerUser } from '@/lib/auth'
+import { Logo } from '@/components/Logo'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { SignOutButton } from '@/components/SignOutButton'
+import { MobileMenu } from '@/components/MobileMenu'
+import { Button } from '@/components/ui/button'
+
+const navLink =
+  'rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:text-foreground hover:bg-muted/50'
 
 export async function Navbar() {
   const user = await getServerUser()
-
-  const profileLabel = user?.first_name
-    ? `${user.first_name} ${user.last_name ?? ''}`.trim()
-    : 'Profile'
+  const isAdmin = user?.role === 'admin'
 
   return (
-    <header className="border-b border-border bg-background sticky top-0 z-40">
-      <nav className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="font-semibold text-base tracking-tight">
-          MarketsApp
-        </Link>
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-[hsl(var(--background)/0.6)] backdrop-blur-xl">
+      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+        <Logo />
 
-        <div className="flex items-center gap-4 text-sm">
-          {user ? (
-            <>
-              <Link href="/listings" className="text-muted-foreground hover:text-foreground transition-colors">
-                Listings
-              </Link>
-              {user.role === 'admin' && (
-                <Link href="/admin/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Admin
-                </Link>
-              )}
-              <Link href="/bids" className="text-muted-foreground hover:text-foreground transition-colors">
-                My Bids
-              </Link>
-              <Link
-                href="/profile"
-                aria-label={profileLabel}
-                title={profileLabel}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <User className="h-5 w-5" />
-              </Link>
-              <SignOutButton />
-            </>
-          ) : (
-            <Link
-              href="/auth/login"
-              className="px-3 py-1.5 rounded-md bg-foreground text-background font-medium hover:opacity-90 transition-opacity"
-            >
-              Sign In
+        <div className="hidden items-center gap-1 text-sm md:flex">
+          {user && (
+            <Link href="/listings" className={navLink}>
+              Listings
             </Link>
           )}
+          {isAdmin && (
+            <Link href="/admin/dashboard" className={navLink}>
+              Admin
+            </Link>
+          )}
+          {user && (
+            <Link href="/bids" className={navLink}>
+              My Bids
+            </Link>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {user ? (
+            <>
+              <Link
+                href="/profile"
+                aria-label="Profile"
+                className="hidden h-9 w-9 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:text-foreground md:inline-flex"
+              >
+                <User className="h-4 w-4" />
+              </Link>
+              <div className="hidden md:block">
+                <SignOutButton />
+              </div>
+            </>
+          ) : (
+            <Button asChild size="sm" className="hidden md:inline-flex">
+              <Link href="/auth/login">Sign In</Link>
+            </Button>
+          )}
+          <MobileMenu isSignedIn={!!user} isAdmin={isAdmin} />
         </div>
       </nav>
     </header>
