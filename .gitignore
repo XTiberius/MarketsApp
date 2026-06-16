@@ -79,3 +79,9 @@ secrets.yml
 # Supabase CLI local state (machine-local; never commit — may hold connection details)
 supabase/.temp
 supabase/.branches
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules
+.design-sync/compiled.css

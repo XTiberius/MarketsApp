@@ -1,0 +1,47 @@
+{
+  "projectId": "02f74dfe-1ecc-4bd6-bf29-cfec7df2826d",
+  "shape": "package",
+  "pkg": "ionic",
+  "globalName": "Ionic",
+  "srcDir": "src/components/ui",
+  "tsconfig": "tsconfig.json",
+  "buildCmd": "node .design-sync/build-css.mjs",
+  "cssEntry": ".design-sync/compiled.css",
+  "readmeHeader": ".design-sync/conventions.md",
+  "guidelinesGlob": ["docs/design/**/*.md"],
+  "runtimeFontPrefixes": ["Geist", "Geist Mono", "Space Grotesk"],
+  "overrides": {
+    "Dialog": { "cardMode": "single", "viewport": "640x540" },
+    "Input": { "cardMode": "column" },
+    "Label": { "cardMode": "column" },
+    "Select": { "cardMode": "column" },
+    "Skeleton": { "cardMode": "column" },
+    "Textarea": { "cardMode": "column" }
+  },
+  "componentSrcMap": {
+    "Accordion": "src/components/ui/accordion.tsx",
+    "Badge": "src/components/ui/badge.tsx",
+    "StatusBadge": "src/components/ui/badge.tsx",
+    "Button": "src/components/ui/button.tsx",
+    "Dialog": "src/components/ui/dialog.tsx",
+    "GlassCard": "src/components/ui/glass-card.tsx",
+    "Input": "src/components/ui/input.tsx",
+    "Label": "src/components/ui/label.tsx",
+    "Select": "src/components/ui/select.tsx",
+    "Skeleton": "src/components/ui/skeleton.tsx",
+    "Textarea": "src/components/ui/textarea.tsx"
+  },
+  "dtsPropsFor": {
+    "Button": "  /** Visual style. @default 'primary' */\n  variant?: 'primary' | 'glass' | 'outline' | 'ghost' | 'destructive' | 'link';\n  /** Control height / padding. @default 'md' */\n  size?: 'sm' | 'md' | 'lg' | 'icon';\n  /** Render as the child element (Radix Slot) instead of a native <button>. */\n  asChild?: boolean;\n  className?: string;\n  children?: React.ReactNode;\n  disabled?: boolean;\n  type?: 'button' | 'submit' | 'reset';\n  onClick?: React.MouseEventHandler<HTMLButtonElement>;",
+    "Badge": "  /** Color-coded semantic tone. @default 'neutral' */\n  tone?: 'neutral' | 'typePrimary' | 'typeSecondary' | 'success' | 'warning' | 'danger' | 'info';\n  className?: string;\n  children?: React.ReactNode;",
+    "StatusBadge": "  /** Which domain enum `value` belongs to — selects the tone + label map. */\n  kind: 'listingType' | 'listingStatus' | 'bidStatus' | 'kycStatus';\n  /** Raw enum value (e.g. 'published', 'awaiting_payment'); rendered as a color-coded Badge. */\n  value: string;\n  className?: string;",
+    "GlassCard": "  /** Adds a hover lift + chromatic glow for clickable cards. @default false */\n  interactive?: boolean;\n  className?: string;\n  children?: React.ReactNode;\n  onClick?: React.MouseEventHandler<HTMLDivElement>;",
+    "Input": "  className?: string;\n  type?: React.HTMLInputTypeAttribute;\n  placeholder?: string;\n  value?: string | number;\n  defaultValue?: string | number;\n  disabled?: boolean;\n  onChange?: React.ChangeEventHandler<HTMLInputElement>;",
+    "Textarea": "  className?: string;\n  placeholder?: string;\n  value?: string;\n  defaultValue?: string;\n  rows?: number;\n  disabled?: boolean;\n  onChange?: React.ChangeEventHandler<HTMLTextAreaElement>;",
+    "Skeleton": "  className?: string;\n  children?: React.ReactNode;",
+    "Label": "  /** Associates the label with a form control by its id. */\n  htmlFor?: string;\n  className?: string;\n  children?: React.ReactNode;",
+    "Accordion": "  /** Single-open or multi-open behavior. */\n  type: 'single' | 'multiple';\n  /** Allow collapsing the open item (only with type='single'). */\n  collapsible?: boolean;\n  value?: string | string[];\n  defaultValue?: string | string[];\n  onValueChange?: (value: string | string[]) => void;\n  className?: string;\n  children?: React.ReactNode;",
+    "Dialog": "  /** Controlled open state. */\n  open?: boolean;\n  defaultOpen?: boolean;\n  onOpenChange?: (open: boolean) => void;\n  modal?: boolean;\n  children?: React.ReactNode;",
+    "Select": "  /** Controlled selected value. */\n  value?: string;\n  defaultValue?: string;\n  onValueChange?: (value: string) => void;\n  open?: boolean;\n  defaultOpen?: boolean;\n  onOpenChange?: (open: boolean) => void;\n  disabled?: boolean;\n  children?: React.ReactNode;"
+  }
+}
