@@ -1,4 +1,4 @@
-# MarketsApp — Launch Roadmap
+# IONIC — Launch Roadmap
 
 > Living checklist the Brain + sub-agents work through to reach launch. Check items off as they
 > land. Each item is tagged for **model routing**: `[critical→in-session]` (judgment/security —

@@ -2,6 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Logo } from '@/components/Logo'
+import { GlassCard } from '@/components/ui/glass-card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -34,43 +39,37 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Sign in to MarketsApp</h1>
+      <GlassCard className="w-full max-w-md p-8 sm:p-10">
+        <div className="flex flex-col items-center text-center">
+          <Logo href={undefined} size={40} />
+          <h1 className="mt-6 font-display text-2xl font-semibold text-foreground">
+            Sign in to IONIC
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             We&apos;ll send a 6-digit code to your email
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">
-              Email address
-            </label>
-            <input
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email address</Label>
+            <Input
               id="email"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-foreground"
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-foreground py-2 text-sm font-medium text-background hover:opacity-90 disabled:opacity-50 transition-opacity"
-          >
+          <Button type="submit" variant="primary" size="lg" disabled={loading} className="w-full">
             {loading ? 'Sending code…' : 'Send code'}
-          </button>
+          </Button>
         </form>
-      </div>
+      </GlassCard>
     </div>
   )
 }

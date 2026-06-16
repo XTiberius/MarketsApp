@@ -1,5 +1,8 @@
 import { requireAdmin } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { Button } from '@/components/ui/button'
+import { GlassCard } from '@/components/ui/glass-card'
+import { Building2, ClipboardCheck, Gavel } from 'lucide-react'
 import Link from 'next/link'
 
 export default async function AdminDashboardPage() {
@@ -17,42 +20,45 @@ export default async function AdminDashboardPage() {
   ])
 
   const stats = [
-    { label: 'Total Listings', value: listingCount ?? 0, href: '/admin/listings' },
-    { label: 'Total Bids', value: bidCount ?? 0, href: '/admin/bids' },
-    { label: 'Pending KYC Reviews', value: pendingKycCount ?? 0, href: '/admin/users' },
+    { label: 'Total Listings', value: listingCount ?? 0, href: '/admin/listings', icon: Building2 },
+    { label: 'Total Bids', value: bidCount ?? 0, href: '/admin/bids', icon: Gavel },
+    {
+      label: 'Pending KYC Reviews',
+      value: pendingKycCount ?? 0,
+      href: '/admin/users',
+      icon: ClipboardCheck,
+    },
   ]
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold mb-8">Admin Dashboard</h1>
+      <div className="mb-8">
+        <h1 className="font-display text-3xl font-bold text-foreground">Admin Dashboard</h1>
+        <p className="mt-2 text-sm text-muted-foreground">Monitor marketplace activity.</p>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-3 mb-10">
         {stats.map((stat) => (
-          <Link
-            key={stat.label}
-            href={stat.href}
-            className="rounded-lg border border-border p-6 hover:bg-muted/40 transition-colors"
-          >
-            <p className="text-3xl font-bold">{stat.value}</p>
-            <p className="text-sm text-muted-foreground mt-1">{stat.label}</p>
-          </Link>
+          <GlassCard key={stat.label} interactive className="p-6">
+            <Link href={stat.href} className="block">
+              <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                <stat.icon className="h-5 w-5" aria-hidden="true" />
+              </div>
+              <p className="font-mono text-4xl font-bold text-foreground">{stat.value}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
+            </Link>
+          </GlassCard>
         ))}
       </div>
 
-      <div className="flex gap-3">
-        <Link
-          href="/admin/listings"
-          className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90"
-        >
-          Manage Listings
-        </Link>
-        <Link
-          href="/admin/users"
-          className="px-4 py-2 rounded-lg border border-border text-sm font-medium hover:bg-muted"
-        >
-          Review KYC
-        </Link>
-      </div>
+      <GlassCard className="flex flex-wrap gap-3 p-5">
+        <Button asChild>
+          <Link href="/admin/listings">Manage Listings</Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/admin/users">Review KYC</Link>
+        </Button>
+      </GlassCard>
     </div>
   )
 }

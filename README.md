@@ -1,4 +1,4 @@
-# MarketsApp
+# IONIC
 
 A venture marketplace platform where accredited investors can discover, bid on, and invest in individual startup fund listings — both primary and secondary.
 
@@ -28,8 +28,8 @@ A venture marketplace platform where accredited investors can discover, bid on, 
 ### 1. Clone & install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/MarketsApp.git
-cd MarketsApp
+git clone https://github.com/YOUR_USERNAME/IONIC.git
+cd IONIC
 npm install
 ```
 

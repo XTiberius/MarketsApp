@@ -1,0 +1,47 @@
+<!--
+  IONIC — branded OTP / magic-link auth email.
+  Source of truth for the Supabase auth email. Paste into:
+  Supabase Dashboard → Authentication → Email Templates → "Magic Link" (and "Confirm signup").
+  Supabase variables: {{ .Token }} = 6-digit code, {{ .ConfirmationURL }}, {{ .SiteURL }}.
+  Logo is served from the production domain so it loads in email clients.
+-->
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+       style="background:#0b0814;padding:40px 0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;">
+  <tr>
+    <td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" role="presentation"
+             style="background:linear-gradient(135deg,#17102b 0%,#1c1140 100%);border:1px solid rgba(124,77,255,0.3);border-radius:20px;overflow:hidden;">
+        <tr>
+          <td style="padding:36px 40px 8px;" align="center">
+            <img src="https://www.ionicmarkets.com/ionic-logo.png" width="48" height="48" alt="IONIC"
+                 style="border-radius:12px;display:block;" />
+            <div style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:4px;margin-top:14px;">IONIC</div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 40px 8px;" align="center">
+            <div style="color:#ffffff;font-size:22px;font-weight:600;">Your sign-in code</div>
+            <div style="color:rgba(255,255,255,0.7);font-size:14px;margin-top:8px;line-height:1.5;">
+              Enter this code to access your IONIC account. It expires shortly.
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:24px 40px;" align="center">
+            <div style="display:inline-block;background:rgba(124,77,255,0.16);border:1px solid rgba(124,77,255,0.4);border-radius:14px;padding:18px 28px;">
+              <span style="color:#c9b4ff;font-size:34px;font-weight:700;letter-spacing:10px;font-family:'SFMono-Regular',Menlo,Consolas,monospace;">{{ .Token }}</span>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 40px 36px;" align="center">
+            <div style="color:rgba(255,255,255,0.5);font-size:12px;line-height:1.5;">
+              If you didn't request this, you can safely ignore this email.<br/>
+              Accredited investors only · IONIC
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

@@ -1,6 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { GlassCard } from '@/components/ui/glass-card'
+import { StatusBadge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
 import { formatDate } from '@/lib/utils'
 import type { KycEntity, KycIndividual, KycStatus, User } from '@/lib/types'
 
@@ -11,12 +15,6 @@ export type UserWithKyc = User & {
 
 interface Props {
   users: UserWithKyc[]
-}
-
-const STATUS_STYLES: Record<KycStatus, string> = {
-  pending: 'text-yellow-700 border-yellow-500',
-  approved: 'text-green-700 border-green-500',
-  rejected: 'text-red-700 border-red-500',
 }
 
 export function AdminKycManagement({ users: initialUsers }: Props) {
@@ -77,11 +75,11 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
   }
 
   if (users.length === 0) {
-    return <p className="text-muted-foreground">No users found.</p>
+    return <p className="p-2 text-sm text-muted-foreground">No users found.</p>
   }
 
   return (
-    <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
+    <div className="space-y-3">
       {users.map((user) => {
         const isExpanded = expanded === user.id
         const isRejecting = rejecting === user.id
@@ -94,32 +92,32 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
           : null
 
         return (
-          <div key={user.id} className="hover:bg-muted/40">
-            <div className="p-4 flex items-center justify-between">
+          <GlassCard key={user.id} interactive className="p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-medium">{displayName}</p>
+                <p className="font-medium text-foreground">{displayName}</p>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
               </div>
 
-              <div className="flex items-center gap-3">
-                <span className={`text-xs border rounded px-2 py-0.5 capitalize ${STATUS_STYLES[user.kyc_status]}`}>
-                  {user.kyc_status}
-                </span>
-                <button
+              <div className="flex flex-wrap items-center gap-3">
+                <StatusBadge kind="kycStatus" value={user.kyc_status} />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => setExpanded(isExpanded ? null : user.id)}
                   disabled={updating !== null}
                   data-testid="admin-kyc-review-toggle"
-                  className="text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:opacity-50"
                 >
                   {isExpanded ? 'Collapse' : 'Review'}
-                </button>
+                </Button>
               </div>
             </div>
 
             {isExpanded && (
-              <div className="px-4 pb-4 text-sm space-y-4">
+              <div className="mt-4 space-y-4 border-t border-border pt-4 text-sm">
                 {user.kyc_individual ? (
-                  <div className="grid gap-2 border-t border-border pt-4">
+                  <div className="grid gap-2">
                     <p><span className="text-muted-foreground">Full name:</span> {individualName}</p>
                     <p><span className="text-muted-foreground">DOB:</span> {user.kyc_individual.dob}</p>
                     <p><span className="text-muted-foreground">Address:</span> {user.kyc_individual.address}</p>
@@ -137,42 +135,46 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
                     )}
 
                     {user.kyc_status !== 'pending' && user.kyc_individual.admin_notes && (
-                      <div className="p-3 bg-muted rounded text-xs">
+                      <div className="rounded-xl border border-border bg-muted/40 p-3 text-xs">
                         <p className="font-medium">Admin notes:</p>
                         <p>{user.kyc_individual.admin_notes}</p>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="border-t border-border pt-4 text-muted-foreground">
+                  <div className="text-muted-foreground">
                     No individual KYC submission found.
                   </div>
                 )}
 
                 {user.kyc_status === 'pending' && (
                   <div className="flex flex-col gap-3">
-                    <div className="flex gap-1">
-                      <button
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => updateStatus(user.id, 'approved')}
                         disabled={updating !== null}
                         data-testid="admin-kyc-approve-button"
-                        className="text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:opacity-50"
                       >
                         Approve
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
                         onClick={() => setRejecting(user.id)}
                         disabled={updating !== null}
                         data-testid="admin-kyc-reject-button"
-                        className="text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:opacity-50"
                       >
                         Reject
-                      </button>
+                      </Button>
                     </div>
 
                     {isRejecting && (
                       <div className="space-y-2">
-                        <textarea
+                        <Textarea
                           value={rejectReason}
                           onChange={(event) =>
                             setRejectReasons((prev) => ({
@@ -182,28 +184,29 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
                           }
                           disabled={updating !== null}
                           data-testid="admin-kyc-reject-reason"
-                          className="w-full min-h-24 rounded border border-border bg-background px-3 py-2 text-sm disabled:opacity-50"
                           placeholder="Reason for rejection"
                         />
-                        <button
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
                           onClick={() => updateStatus(user.id, 'rejected', rejectReason.trim())}
                           disabled={updating !== null || rejectReason.trim().length === 0}
                           data-testid="admin-kyc-confirm-reject-button"
-                          className="text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:opacity-50"
                         >
                           Confirm rejection
-                        </button>
+                        </Button>
                       </div>
                     )}
                   </div>
                 )}
 
                 {errors[user.id] && (
-                  <p className="text-xs text-red-700">{errors[user.id]}</p>
+                  <p className="text-xs text-danger">{errors[user.id]}</p>
                 )}
               </div>
             )}
-          </div>
+          </GlassCard>
         )
       })}
     </div>

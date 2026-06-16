@@ -1,7 +1,19 @@
 'use client'
 
 import { useState } from 'react'
+import { TrendingUp, CheckCircle2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 interface Props {
   listingId: string
@@ -48,54 +60,53 @@ export function BidModal({ listingId, companyName }: Props) {
     setLoading(false)
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        data-testid="bid-open-button"
-        className="w-full py-3 rounded-lg bg-foreground text-background font-medium hover:opacity-90 transition-opacity"
-      >
-        Place Bid
-      </button>
-    )
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div
-        data-testid="bid-modal"
-        className="w-full max-w-sm bg-background rounded-xl border border-border p-6 space-y-4 shadow-xl"
-      >
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="primary" size="lg" className="w-full" data-testid="bid-open-button">
+          <TrendingUp className="h-4 w-4" />
+          Place Bid
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent data-testid="bid-modal" className="max-w-sm">
         {success ? (
-          <div className="text-center space-y-3">
-            <p className="font-semibold text-lg">Bid placed!</p>
-            <p className="text-sm text-muted-foreground">
-              Your bid on <strong>{companyName}</strong> has been submitted. The team will be in touch.
-            </p>
-            <button
+          <div className="space-y-4 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[hsl(var(--success)/0.14)]">
+              <CheckCircle2 className="h-6 w-6 text-success" />
+            </div>
+            <div className="space-y-1.5">
+              <p className="font-display text-lg font-semibold text-foreground">Bid placed!</p>
+              <p className="text-sm text-muted-foreground">
+                Your bid on <strong className="text-foreground">{companyName}</strong> has been submitted. The team will be in touch.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
               onClick={() => {
                 setOpen(false)
                 setSuccess(false)
                 setAmount('')
               }}
-              className="w-full py-2 rounded-lg border border-border text-sm hover:bg-muted"
             >
               Close
-            </button>
+            </Button>
           </div>
         ) : (
           <>
-            <div>
-              <h2 className="font-semibold text-lg">Place a Bid</h2>
-              <p className="text-sm text-muted-foreground">{companyName} · Min. {formatCurrency(MIN_BID)}</p>
-            </div>
+            <DialogHeader>
+              <DialogTitle>Place a Bid</DialogTitle>
+              <DialogDescription>
+                {companyName} · Min. {formatCurrency(MIN_BID)}
+              </DialogDescription>
+            </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label htmlFor="bid-amount" className="block text-sm font-medium mb-1">
-                  Bid Amount (USD)
-                </label>
-                <input
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="bid-amount">Bid Amount (USD)</Label>
+                <Input
                   id="bid-amount"
                   type="text"
                   inputMode="numeric"
@@ -103,33 +114,35 @@ export function BidModal({ listingId, companyName }: Props) {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="$50,000"
-                  className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-foreground"
+                  className="font-mono"
                 />
               </div>
 
-              {error && <p className="text-sm text-red-600">{error}</p>}
+              {error && <p className="text-sm text-danger">{error}</p>}
 
               <div className="flex gap-2">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  className="flex-1"
                   onClick={() => setOpen(false)}
-                  className="flex-1 py-2 rounded-lg border border-border text-sm hover:bg-muted"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
+                  variant="primary"
+                  className="flex-1"
                   disabled={loading}
                   data-testid="bid-submit-button"
-                  className="flex-1 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 disabled:opacity-50"
                 >
                   {loading ? 'Submitting…' : 'Submit Bid'}
-                </button>
+                </Button>
               </div>
             </form>
           </>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

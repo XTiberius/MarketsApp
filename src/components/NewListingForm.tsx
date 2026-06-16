@@ -2,6 +2,17 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import type { ListingType, ListingStatus } from '@/lib/types'
 import { isValidHttpUrl } from '@/lib/utils'
 
@@ -24,9 +35,6 @@ const REQUIRED_FIELDS: (keyof FormState)[] = [
   'industry',
   'nda_text',
 ]
-
-const inputClass =
-  'w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-foreground'
 
 export function NewListingForm() {
   const router = useRouter()
@@ -102,116 +110,117 @@ export function NewListingForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5" noValidate>
       <div>
-        <label htmlFor="company_name" className="block text-sm font-medium mb-1">
-          Company name <span className="text-red-600">*</span>
-        </label>
-        <input
+        <Label htmlFor="company_name" className="mb-1 block">
+          Company name <span className="text-danger">*</span>
+        </Label>
+        <Input
           id="company_name"
           type="text"
           value={form.company_name}
           onChange={(e) => update('company_name', e.target.value)}
-          className={inputClass}
         />
         {errors.company_name && (
-          <p className="text-xs text-red-600 mt-1">{errors.company_name}</p>
+          <p className="mt-1 text-xs text-danger">{errors.company_name}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium mb-1">
-          Description <span className="text-red-600">*</span>
-        </label>
-        <textarea
+        <Label htmlFor="description" className="mb-1 block">
+          Description <span className="text-danger">*</span>
+        </Label>
+        <Textarea
           id="description"
           rows={4}
           value={form.description}
           onChange={(e) => update('description', e.target.value)}
-          className={inputClass}
         />
         {errors.description && (
-          <p className="text-xs text-red-600 mt-1">{errors.description}</p>
+          <p className="mt-1 text-xs text-danger">{errors.description}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="industry" className="block text-sm font-medium mb-1">
-          Industry <span className="text-red-600">*</span>
-        </label>
-        <input
+        <Label htmlFor="industry" className="mb-1 block">
+          Industry <span className="text-danger">*</span>
+        </Label>
+        <Input
           id="industry"
           type="text"
           value={form.industry}
           onChange={(e) => update('industry', e.target.value)}
-          className={inputClass}
         />
         {errors.industry && (
-          <p className="text-xs text-red-600 mt-1">{errors.industry}</p>
+          <p className="mt-1 text-xs text-danger">{errors.industry}</p>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="listing_type" className="block text-sm font-medium mb-1">
-            Listing type <span className="text-red-600">*</span>
-          </label>
-          <select
-            id="listing_type"
+          <Label htmlFor="listing_type" className="mb-1 block">
+            Listing type <span className="text-danger">*</span>
+          </Label>
+          <Select
             value={form.listing_type}
-            onChange={(e) => update('listing_type', e.target.value as ListingType)}
-            className={inputClass}
+            onValueChange={(value) => update('listing_type', value as ListingType)}
           >
-            <option value="primary">Primary</option>
-            <option value="secondary">Secondary</option>
-          </select>
+            <SelectTrigger id="listing_type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="primary">Primary</SelectItem>
+              <SelectItem value="secondary">Secondary</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div>
-          <label htmlFor="status" className="block text-sm font-medium mb-1">
-            Status <span className="text-red-600">*</span>
-          </label>
-          <select
-            id="status"
+          <Label htmlFor="status" className="mb-1 block">
+            Status <span className="text-danger">*</span>
+          </Label>
+          <Select
             value={form.status}
-            onChange={(e) => update('status', e.target.value as ListingStatus)}
-            className={inputClass}
+            onValueChange={(value) => update('status', value as ListingStatus)}
           >
-            <option value="draft">Draft</option>
-            <option value="published">Published</option>
-            <option value="closed">Closed</option>
-          </select>
+            <SelectTrigger id="status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       <div>
-        <label htmlFor="logo_url" className="block text-sm font-medium mb-1">
+        <Label htmlFor="logo_url" className="mb-1 block">
           Logo URL
-        </label>
-        <input
+        </Label>
+        <Input
           id="logo_url"
           type="url"
           value={form.logo_url}
           onChange={(e) => update('logo_url', e.target.value)}
           placeholder="https://…"
-          className={inputClass}
         />
         {errors.logo_url && (
-          <p className="text-xs text-red-600 mt-1">{errors.logo_url}</p>
+          <p className="mt-1 text-xs text-danger">{errors.logo_url}</p>
         )}
       </div>
 
       <div>
-        <label htmlFor="nda_text" className="block text-sm font-medium mb-1">
-          NDA text <span className="text-red-600">*</span>
-        </label>
-        <textarea
+        <Label htmlFor="nda_text" className="mb-1 block">
+          NDA text <span className="text-danger">*</span>
+        </Label>
+        <Textarea
           id="nda_text"
           rows={5}
           value={form.nda_text}
           onChange={(e) => update('nda_text', e.target.value)}
           placeholder="Plain-text NDA shown to investors before they unlock deal details."
-          className={inputClass}
         />
         {errors.nda_text && (
-          <p className="text-xs text-red-600 mt-1">{errors.nda_text}</p>
+          <p className="mt-1 text-xs text-danger">{errors.nda_text}</p>
         )}
       </div>
 
@@ -223,72 +232,68 @@ export function NewListingForm() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="valuation" className="block text-sm font-medium mb-1">
+            <Label htmlFor="valuation" className="mb-1 block">
               Valuation ($)
-            </label>
-            <input
+            </Label>
+            <Input
               id="valuation"
               type="number"
               min="0"
               value={form.valuation}
               onChange={(e) => update('valuation', e.target.value)}
-              className={inputClass}
             />
             {errors.valuation && (
-              <p className="text-xs text-red-600 mt-1">{errors.valuation}</p>
+              <p className="mt-1 text-xs text-danger">{errors.valuation}</p>
             )}
           </div>
           <div>
-            <label htmlFor="amount_raised" className="block text-sm font-medium mb-1">
+            <Label htmlFor="amount_raised" className="mb-1 block">
               Amount raised ($)
-            </label>
-            <input
+            </Label>
+            <Input
               id="amount_raised"
               type="number"
               min="0"
               value={form.amount_raised}
               onChange={(e) => update('amount_raised', e.target.value)}
-              className={inputClass}
             />
             {errors.amount_raised && (
-              <p className="text-xs text-red-600 mt-1">{errors.amount_raised}</p>
+              <p className="mt-1 text-xs text-danger">{errors.amount_raised}</p>
             )}
           </div>
         </div>
 
         <div>
-          <label htmlFor="investment_structure" className="block text-sm font-medium mb-1">
+          <Label htmlFor="investment_structure" className="mb-1 block">
             Investment structure
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             id="investment_structure"
             rows={3}
             value={form.investment_structure}
             onChange={(e) => update('investment_structure', e.target.value)}
-            className={inputClass}
           />
         </div>
       </div>
 
-      {apiError && <p className="text-sm text-red-600">{apiError}</p>}
+      {apiError && <p className="text-sm text-danger">{apiError}</p>}
 
       <div className="flex gap-3">
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className="px-5 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 disabled:opacity-50"
         >
           {loading ? 'Creating…' : 'Create listing'}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
           onClick={() => router.push('/admin/listings')}
-          className="px-5 py-2.5 rounded-lg border border-border text-sm font-medium hover:bg-muted"
         >
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   )

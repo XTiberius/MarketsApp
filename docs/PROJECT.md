@@ -1,6 +1,6 @@
-# MarketsApp — Project Dossier
+# IONIC — Project Dossier
 
-> Single source of truth for what MarketsApp is, how it's built, and where it stands. Written so
+> Single source of truth for what IONIC is, how it's built, and where it stands. Written so
 > any agent (or new engineer) can act without re-deriving context. Pair with
 > [`LAUNCH.md`](./LAUNCH.md) for the prioritized path to go-live.
 >
@@ -10,7 +10,7 @@
 
 ## 1. Executive summary
 
-MarketsApp is a **private venture marketplace for accredited investors.** Admins publish deal
+IONIC is a **private venture marketplace for accredited investors.** Admins publish deal
 **listings** — primary raises or secondary share sales — with a public teaser; the sensitive
 terms (valuation, amount raised, investment structure) stay **locked behind a per-deal NDA** that
 the investor signs by drawing a signature. Investors complete **KYC / accreditation** (reviewed
@@ -120,7 +120,7 @@ fetching is server components + `fetch()` mutations).
 - `kyc_entity` missing an admin-UPDATE RLS policy.
 - No tests / CI / deploy config; light hardening (rate-limit, file validation, error/404) absent.
 
-**Repo:** `github.com/XTiberius/MarketsApp`, branch `main` — **13 commits unpushed** + an
+**Repo:** `github.com/XTiberius/IONIC`, branch `main` — **13 commits unpushed** + an
 in-progress server-side auth refactor uncommitted (login/verify/logout moving to API routes).
 Get to a clean, pushed state before feature work (LAUNCH P0).
 

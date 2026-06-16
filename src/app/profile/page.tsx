@@ -1,12 +1,76 @@
 import { requireAuth } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { formatDate } from '@/lib/utils'
+import { GlassCard } from '@/components/ui/glass-card'
+import { StatusBadge } from '@/components/ui/badge'
 import { KYCForm } from '@/components/KYCForm'
+import type { KycStatus } from '@/lib/types'
 
-const KYC_STATUS_LABELS = {
-  pending: 'Under Review',
-  approved: 'Approved',
-  rejected: 'Rejected',
+/**
+ * Simple two-stage KYC progress indicator:
+ *   pending → approved (success) | rejected (danger)
+ * Tokens only, so it themes correctly in light + dark.
+ */
+function KycProgress({ status }: { status: KycStatus }) {
+  const isResolved = status === 'approved' || status === 'rejected'
+  const resolvedColor = status === 'rejected' ? 'danger' : 'success'
+
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        <span
+          className={
+            status === 'pending'
+              ? 'h-2.5 w-2.5 rounded-full bg-warning'
+              : 'h-2.5 w-2.5 rounded-full bg-[hsl(var(--success)/0.6)]'
+          }
+        />
+        <span
+          className={
+            status === 'pending'
+              ? 'text-xs font-medium text-warning'
+              : 'text-xs font-medium text-muted-foreground'
+          }
+        >
+          Submitted
+        </span>
+      </div>
+
+      <span
+        className={
+          isResolved
+            ? resolvedColor === 'danger'
+              ? 'h-0.5 w-8 rounded-full bg-[hsl(var(--danger)/0.5)]'
+              : 'h-0.5 w-8 rounded-full bg-[hsl(var(--success)/0.5)]'
+            : 'h-0.5 w-8 rounded-full bg-border'
+        }
+        aria-hidden
+      />
+
+      <div className="flex items-center gap-2">
+        <span
+          className={
+            !isResolved
+              ? 'h-2.5 w-2.5 rounded-full bg-border'
+              : resolvedColor === 'danger'
+                ? 'h-2.5 w-2.5 rounded-full bg-danger'
+                : 'h-2.5 w-2.5 rounded-full bg-success'
+          }
+        />
+        <span
+          className={
+            !isResolved
+              ? 'text-xs font-medium text-muted-foreground'
+              : resolvedColor === 'danger'
+                ? 'text-xs font-medium text-danger'
+                : 'text-xs font-medium text-success'
+          }
+        >
+          {status === 'rejected' ? 'Rejected' : 'Approved'}
+        </span>
+      </div>
+    </div>
+  )
 }
 
 export default async function ProfilePage() {
@@ -22,47 +86,46 @@ export default async function ProfilePage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
       {/* Account Info */}
-      <div className="rounded-lg border border-border p-6 space-y-3">
-        <div>
-          <h1 className="text-2xl font-bold">
-            {user.first_name} {user.last_name}
-          </h1>
-          <p className="text-sm text-muted-foreground">{user.email}</p>
-        </div>
-        <div className="text-sm space-y-1 pt-3 border-t border-border">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Member since</span>
-            <span>{formatDate(user.created_at)}</span>
+      <GlassCard className="p-6 space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl font-semibold tracking-tight">
+              {user.first_name} {user.last_name}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">{user.email}</p>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-muted-foreground">KYC Status</span>
-            <span className={`text-xs border rounded px-2 py-0.5 ${
-              user.kyc_status === 'approved'
-                ? 'border-green-500 text-green-700'
-                : user.kyc_status === 'rejected'
-                  ? 'border-red-500 text-red-700'
-                  : 'border-border'
-            }`}>
-              {KYC_STATUS_LABELS[user.kyc_status]}
-            </span>
-          </div>
+          <StatusBadge kind="kycStatus" value={user.kyc_status} />
         </div>
-      </div>
+        <div className="flex justify-between border-t border-border pt-4 text-sm">
+          <span className="text-muted-foreground">Member since</span>
+          <span>{formatDate(user.created_at)}</span>
+        </div>
+      </GlassCard>
 
       {/* KYC Section */}
-      <div>
-        <h2 className="text-lg font-semibold mb-4">KYC Information</h2>
+      <section className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-display text-lg font-semibold">KYC Information</h2>
+          {kycIndividual && <KycProgress status={user.kyc_status} />}
+        </div>
+
         {kycIndividual ? (
-          <div className="rounded-lg border border-border p-6 text-sm space-y-2">
-            <p><span className="text-muted-foreground">Name:</span> {kycIndividual.first_name} {kycIndividual.last_name}</p>
-            <p><span className="text-muted-foreground">Submitted:</span> {kycIndividual.submitted_at ? formatDate(kycIndividual.submitted_at) : '—'}</p>
+          <GlassCard className="p-6 text-sm space-y-2">
+            <p>
+              <span className="text-muted-foreground">Name:</span>{' '}
+              {kycIndividual.first_name} {kycIndividual.last_name}
+            </p>
+            <p>
+              <span className="text-muted-foreground">Submitted:</span>{' '}
+              {kycIndividual.submitted_at ? formatDate(kycIndividual.submitted_at) : '—'}
+            </p>
             {user.kyc_status === 'rejected' && kycIndividual.admin_notes && (
-              <div className="mt-3 p-3 bg-red-50 rounded text-red-700 text-xs">
+              <div className="mt-3 rounded-xl border border-[hsl(var(--danger)/0.35)] bg-[hsl(var(--danger)/0.12)] p-3 text-xs text-danger">
                 <p className="font-medium">Review notes:</p>
                 <p>{kycIndividual.admin_notes}</p>
               </div>
             )}
-          </div>
+          </GlassCard>
         ) : (
           <KYCForm
             userId={user.id}
@@ -71,7 +134,7 @@ export default async function ProfilePage() {
             lastName={user.last_name}
           />
         )}
-      </div>
+      </section>
     </div>
   )
 }

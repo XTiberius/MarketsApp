@@ -1,6 +1,9 @@
 import { requireAdmin } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { GlassCard } from '@/components/ui/glass-card'
+import { StatusBadge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
 import { DeleteListingButton } from '@/components/DeleteListingButton'
 import type { Listing } from '@/lib/types'
@@ -14,52 +17,44 @@ export default async function AdminListingsPage() {
     .select('*')
     .order('created_at', { ascending: false })
 
-  const STATUS_STYLES: Record<Listing['status'], string> = {
-    draft: 'text-muted-foreground border-border',
-    published: 'text-green-700 border-green-500',
-    closed: 'text-red-700 border-red-500',
-  }
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-bold">Listings</h1>
-        <Link
-          href="/admin/listings/new"
-          className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90"
-        >
-          + New Listing
-        </Link>
+        <h1 className="font-display text-3xl font-bold text-foreground">Listings</h1>
+        <Button asChild>
+          <Link href="/admin/listings/new">New Listing</Link>
+        </Button>
       </div>
 
       {!listings || listings.length === 0 ? (
-        <p className="text-muted-foreground">No listings yet.</p>
+        <GlassCard className="p-6 text-sm text-muted-foreground">No listings yet.</GlassCard>
       ) : (
-        <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
+        <div className="space-y-3">
           {listings.map((listing: Listing) => (
-            <div key={listing.id} className="p-4 flex items-center justify-between hover:bg-muted/40">
+            <GlassCard
+              key={listing.id}
+              interactive
+              className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
               <div>
-                <p className="font-medium">{listing.company_name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {listing.industry} · {listing.listing_type} · {formatDate(listing.created_at)}
-                </p>
+                <p className="font-medium text-foreground">{listing.company_name}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <span>{listing.industry}</span>
+                  <StatusBadge kind="listingType" value={listing.listing_type} />
+                  <span>{formatDate(listing.created_at)}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className={`text-xs border rounded px-2 py-0.5 ${STATUS_STYLES[listing.status]}`}>
-                  {listing.status}
-                </span>
-                <Link
-                  href={`/admin/listings/${listing.id}`}
-                  className="text-sm underline text-foreground"
-                >
-                  Edit
-                </Link>
+              <div className="flex flex-wrap items-center gap-3">
+                <StatusBadge kind="listingStatus" value={listing.status} />
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/admin/listings/${listing.id}`}>Edit</Link>
+                </Button>
                 <DeleteListingButton
                   listingId={listing.id}
                   companyName={listing.company_name}
                 />
               </div>
-            </div>
+            </GlassCard>
           ))}
         </div>
       )}
