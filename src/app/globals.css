@@ -47,11 +47,13 @@
   --glass-shadow: 0 8px 40px -10px hsl(263 50% 55% / 0.28);
   --blur: 16px;
 
-  --space-1: 264 85% 93%;
-  --space-2: 290 75% 93%;
-  --space-3: 220 85% 95%;
-  --star: 263 50% 45%;
-  --star-alpha: 0.22;
+  --space-1: 266 60% 96%;
+  --space-3: 230 55% 97%;
+  --star: 263 40% 50%;
+  --star-alpha: 0.14;
+
+  /* chromatic-glass edge intensity (refined; light theme subtler) */
+  --chroma-alpha: 0.38;
 
   --radius: 0.85rem;
 }
@@ -96,11 +98,13 @@
   --glass-shadow: 0 10px 50px -12px hsl(263 80% 25% / 0.65);
   --blur: 16px;
 
-  --space-1: 263 62% 16%;
-  --space-2: 290 58% 14%;
-  --space-3: 222 64% 11%;
+  --space-1: 264 45% 12%;
+  --space-3: 230 50% 8%;
   --star: 0 0% 100%;
-  --star-alpha: 0.85;
+  --star-alpha: 0.55;
+
+  /* chromatic-glass edge intensity (refined; vibrant on dark) */
+  --chroma-alpha: 0.5;
 }
 
 /* ---- wire tokens to Tailwind v4 utilities ---- */
@@ -171,13 +175,36 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---- reusable liquid-glass surface ---- */
+/* ---- reusable liquid-glass surface (refined chromatic) ---- */
 @utility glass {
+  position: relative;
   background-color: hsl(var(--glass-bg) / var(--glass-bg-alpha));
-  backdrop-filter: blur(var(--blur)) saturate(160%);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(160%);
+  backdrop-filter: blur(var(--blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(150%);
   border: 1px solid hsl(var(--glass-border) / var(--glass-border-alpha));
-  box-shadow: var(--glass-shadow), inset 0 1px 0 0 hsl(var(--glass-highlight) / 0.12);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 0 hsl(var(--glass-highlight) / 0.18);
+
+  /* thin iridescent edge — gradient ring masked to the 1px border only */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--type-primary) / var(--chroma-alpha)) 0%,
+      hsl(var(--type-secondary) / var(--chroma-alpha)) 50%,
+      hsl(var(--accent) / var(--chroma-alpha)) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
 }
 
 /* respect reduced-motion globally for our keyframe utilities */
