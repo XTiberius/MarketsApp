@@ -90,6 +90,68 @@ async function resetKycFixture() {
   if (kycError) throw kycError
 }
 
+async function setListingFixture(patch: Record<string, unknown>) {
+  const supabase = adminClient()
+  const { listingId } = await fixtureIds(supabase)
+  const { error } = await supabase.from('listings').update(patch).eq('id', listingId)
+  if (error) throw error
+  return listingId
+}
+
+// Clean up the test-uploaded logo object + reset logo_url (storage isn't cascaded
+// by the global listing teardown). Targeted: only the fixture listing's own logo.
+test.afterAll(async () => {
+  if (!serviceRoleKey) return
+  const supabase = adminClient()
+  const { data } = await supabase
+    .from('listings')
+    .select('logo_url')
+    .eq('company_name', LISTING_NAME)
+    .maybeSingle()
+  const url = (data?.logo_url as string | null | undefined) ?? null
+  if (url && url.includes('/logos/')) {
+    const objectPath = url.split('/logos/')[1]
+    if (objectPath) await supabase.storage.from('logos').remove([objectPath])
+  }
+  await supabase.from('listings').update({ logo_url: null }).eq('company_name', LISTING_NAME)
+})
+
+test('/admin/listings edits a draft listing to published', async ({ page }) => {
+  console.log('[playwright admin] running with seeded admin storageState')
+  const listingId = await setListingFixture({ status: 'draft' })
+
+  await page.goto(`/admin/listings/${listingId}`)
+  await expect(page.getByRole('heading', { name: /Edit:/ })).toBeVisible()
+
+  // Radix Select: open the trigger, choose Published from the portal-rendered options.
+  await page.getByTestId('form-status-select').click()
+  await page.getByRole('option', { name: 'Published' }).click()
+  await page.getByTestId('form-submit-button').click()
+
+  await expect(page).toHaveURL(/\/admin\/listings$/)
+  // End-to-end proof: a published listing now appears on the (auth-gated) listings page.
+  await page.goto('/listings')
+  await expect(page.getByText(LISTING_NAME)).toBeVisible()
+})
+
+test('/admin/listings uploads a logo via the drag-drop field', async ({ page }) => {
+  console.log('[playwright admin] running with seeded admin storageState')
+  const listingId = await setListingFixture({ status: 'published', logo_url: null })
+
+  await page.goto(`/admin/listings/${listingId}`)
+  await expect(page.getByRole('heading', { name: /Edit:/ })).toBeVisible()
+
+  // Set the hidden file input directly (covers click-to-upload; drag-drop shares the handler).
+  await page.getByTestId('logo-file-input').setInputFiles('tests/fixtures/images/test-logo.png')
+  await expect(page.getByTestId('logo-preview-image')).toBeVisible()
+  await page.getByTestId('form-submit-button').click()
+
+  await expect(page).toHaveURL(/\/admin\/listings$/)
+  // End-to-end proof: the uploaded logo renders on the public listing card.
+  await page.goto('/listings')
+  await expect(page.getByAltText(`${LISTING_NAME} logo`)).toBeVisible()
+})
+
 test('/admin/bids transitions a bid', async ({ page }) => {
   console.log('[playwright admin] running with seeded admin storageState')
   await resetBidFixture()

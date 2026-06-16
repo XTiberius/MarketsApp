@@ -47,7 +47,9 @@ export default async function AdminListingsPage() {
               <div className="flex flex-wrap items-center gap-3">
                 <StatusBadge kind="listingStatus" value={listing.status} />
                 <Button asChild variant="outline" size="sm">
-                  <Link href={`/admin/listings/${listing.id}`}>Edit</Link>
+                  <Link href={`/admin/listings/${listing.id}`} data-testid={`admin-listing-edit-${listing.id}`}>
+                    Edit
+                  </Link>
                 </Button>
                 <DeleteListingButton
                   listingId={listing.id}

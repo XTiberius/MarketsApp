@@ -193,7 +193,7 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
             value={form.status}
             onValueChange={(value) => update('status', value as ListingStatus)}
           >
-            <SelectTrigger id="status">
+            <SelectTrigger id="status" data-testid="form-status-select">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -286,6 +286,7 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
         <Button
           type="submit"
           disabled={loading}
+          data-testid="form-submit-button"
         >
           {loading ? (isEdit ? 'Saving…' : 'Creating…') : isEdit ? 'Save changes' : 'Create listing'}
         </Button>
