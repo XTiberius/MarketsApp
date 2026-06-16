@@ -1,6 +1,7 @@
 import { requireAdmin } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { AdminKycManagement } from '@/components/AdminKycManagement'
+import { GlassCard } from '@/components/ui/glass-card'
 import type { KycEntity, KycIndividual, User } from '@/lib/types'
 
 export default async function AdminUsersPage() {
@@ -46,7 +47,9 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold mb-8">User KYC Review</h1>
+      <GlassCard className="mb-6 p-6">
+        <h1 className="font-display text-3xl font-bold text-foreground">User KYC Review</h1>
+      </GlassCard>
       <AdminKycManagement users={usersWithKyc} />
     </div>
   )

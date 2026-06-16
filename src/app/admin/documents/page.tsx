@@ -1,5 +1,8 @@
 import { requireAdmin } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { GlassCard } from '@/components/ui/glass-card'
 import { formatDate } from '@/lib/utils'
 import type { AssociatedDocument } from '@/lib/types'
 
@@ -14,29 +17,32 @@ export default async function AdminDocumentsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold mb-8">Documents</h1>
+      <h1 className="mb-8 font-display text-3xl font-bold text-foreground">Documents</h1>
 
       {!documents || documents.length === 0 ? (
-        <p className="text-muted-foreground">No documents uploaded yet.</p>
+        <GlassCard className="p-6 text-sm text-muted-foreground">No documents uploaded yet.</GlassCard>
       ) : (
-        <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
+        <div className="space-y-3">
           {documents.map((doc: AssociatedDocument & { bids: { listings: { company_name: string } } }) => (
-            <div key={doc.id} className="p-4 flex items-center justify-between hover:bg-muted/40">
+            <GlassCard
+              key={doc.id}
+              interactive
+              className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
               <div>
-                <p className="font-medium">{doc.file_name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {doc.document_type} · {doc.bids?.listings?.company_name ?? '—'} · {formatDate(doc.uploaded_at)}
-                </p>
+                <p className="font-medium text-foreground">{doc.file_name}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                  <Badge tone="neutral">{doc.document_type.replace(/_/g, ' ')}</Badge>
+                  <span>{doc.bids?.listings?.company_name ?? '—'}</span>
+                  <span>{formatDate(doc.uploaded_at)}</span>
+                </div>
               </div>
-              <a
-                href={doc.file_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm underline text-foreground"
-              >
-                Download
-              </a>
-            </div>
+              <Button asChild variant="outline" size="sm">
+                <a href={doc.file_url} target="_blank" rel="noopener noreferrer">
+                  Download
+                </a>
+              </Button>
+            </GlassCard>
           ))}
         </div>
       )}

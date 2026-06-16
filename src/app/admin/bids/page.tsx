@@ -1,6 +1,7 @@
 import { requireAdmin } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { AdminBidManagement } from '@/components/AdminBidManagement'
+import { GlassCard } from '@/components/ui/glass-card'
 
 export default async function AdminBidsPage() {
   await requireAdmin()
@@ -13,7 +14,9 @@ export default async function AdminBidsPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold mb-8">Bid Management</h1>
+      <GlassCard className="mb-6 p-6">
+        <h1 className="font-display text-3xl font-bold text-foreground">Bid Management</h1>
+      </GlassCard>
       <AdminBidManagement bids={bids ?? []} />
     </div>
   )

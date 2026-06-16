@@ -1,6 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { GlassCard } from '@/components/ui/glass-card'
+import { StatusBadge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import type { Bid, BidStatus } from '@/lib/types'
 
@@ -44,45 +47,51 @@ export function AdminBidManagement({ bids: initialBids }: Props) {
   }
 
   if (bids.length === 0) {
-    return <p className="text-muted-foreground">No bids yet.</p>
+    return <p className="p-2 text-sm text-muted-foreground">No bids yet.</p>
   }
 
   return (
-    <div className="divide-y divide-border border border-border rounded-lg overflow-hidden">
+    <div className="space-y-3">
       {bids.map((bid) => {
         const nextStatuses = TRANSITIONS[bid.status]
         return (
-          <div key={bid.id} className="p-4 flex items-center justify-between hover:bg-muted/40">
+          <GlassCard
+            key={bid.id}
+            interactive
+            className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
+          >
             <div>
-              <p className="font-medium">{bid.listings.company_name}</p>
+              <p className="font-medium text-foreground">{bid.listings.company_name}</p>
               <p className="text-sm text-muted-foreground">
                 {bid.users.email} · {formatDate(bid.created_at)}
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
-              <p className="font-semibold text-sm">{formatCurrency(bid.amount)}</p>
-              <span className="text-xs border border-border rounded px-2 py-0.5 capitalize">
-                {bid.status.replace(/_/g, ' ')}
-              </span>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="font-mono text-sm font-semibold text-foreground">
+                {formatCurrency(bid.amount)}
+              </p>
+              <StatusBadge kind="bidStatus" value={bid.status} />
 
               {nextStatuses.length > 0 && (
-                <div className="flex gap-1">
+                <div className="flex flex-wrap gap-2">
                   {nextStatuses.map((next) => (
-                    <button
+                    <Button
                       key={next}
+                      type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => updateStatus(bid.id, next)}
                       disabled={updating === bid.id}
                       data-testid={`admin-bid-status-${next}`}
-                      className="text-xs px-2 py-1 rounded border border-border hover:bg-muted disabled:opacity-50 capitalize"
                     >
                       {next.replace(/_/g, ' ')}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
             </div>
-          </div>
+          </GlassCard>
         )
       })}
     </div>
