@@ -1,7 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { Lock, ShieldCheck, CheckCircle2 } from 'lucide-react'
 import { SignatureField } from '@/components/SignatureField'
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   listingId: string
@@ -43,77 +53,80 @@ export function NDAModal({ listingId, ndaText }: Props) {
     setTimeout(() => window.location.reload(), 1500)
   }
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        data-testid="nda-open-button"
-        className="px-4 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity"
-      >
-        Sign NDA to Unlock
-      </button>
-    )
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-      <div
-        data-testid="nda-modal"
-        className="w-full max-w-lg bg-background rounded-xl border border-border shadow-xl flex flex-col max-h-[90vh]"
-      >
-        <div className="p-6 border-b border-border">
-          <h2 className="font-semibold text-lg">Non-Disclosure Agreement</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            Sign to unlock confidential deal details
-          </p>
-        </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="primary" data-testid="nda-open-button">
+          <Lock className="h-4 w-4" />
+          Sign NDA to Unlock
+        </Button>
+      </DialogTrigger>
 
-        <div className="p-6 overflow-y-auto flex-1 text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+      <DialogContent
+        data-testid="nda-modal"
+        className="flex max-h-[90vh] max-w-lg flex-col gap-0 overflow-hidden p-0"
+      >
+        <DialogHeader className="border-b border-border/60 p-6">
+          <DialogTitle className="flex items-center gap-2">
+            <ShieldCheck className="h-5 w-5 text-primary" />
+            Non-Disclosure Agreement
+          </DialogTitle>
+          <DialogDescription>
+            Sign to unlock confidential deal details
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-y-auto whitespace-pre-wrap p-6 text-sm leading-relaxed text-muted-foreground">
           {ndaText}
         </div>
 
         {success ? (
-          <div className="p-6 text-center text-sm text-green-700 border-t border-border">
-            ✓ NDA signed — unlocking details…
+          <div className="flex items-center justify-center gap-2 border-t border-border/60 p-6 text-sm font-medium text-success">
+            <CheckCircle2 className="h-4 w-4" />
+            NDA signed — unlocking details…
           </div>
         ) : (
-          <div className="p-6 border-t border-border space-y-4">
+          <div className="space-y-4 border-t border-border/60 p-6">
             <div>
-              <p className="text-sm font-medium mb-2">Your signature</p>
+              <p className="mb-2 text-sm font-medium text-foreground">Your signature</p>
               <SignatureField onChange={setSignature} />
             </div>
 
-            <label className="flex items-start gap-2 text-sm cursor-pointer">
+            <label className="flex cursor-pointer items-start gap-2.5 text-sm text-foreground">
               <input
                 type="checkbox"
                 checked={agreed}
                 onChange={(e) => setAgreed(e.target.checked)}
-                className="mt-0.5"
+                className="mt-0.5 h-4 w-4 rounded border-input accent-[hsl(var(--primary))]"
               />
               <span>I agree to the terms of this NDA and confirm I am an accredited investor</span>
             </label>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
 
             <div className="flex gap-2">
-              <button
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
                 onClick={() => setOpen(false)}
-                className="flex-1 py-2 rounded-lg border border-border text-sm hover:bg-muted"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                type="button"
+                variant="primary"
+                className="flex-1"
                 onClick={handleSign}
                 disabled={!signature || !agreed || loading}
                 data-testid="nda-submit-button"
-                className="flex-1 py-2 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 disabled:opacity-50"
               >
                 {loading ? 'Signing…' : 'Sign NDA'}
-              </button>
+              </Button>
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }

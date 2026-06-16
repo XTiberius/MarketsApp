@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { ListingLogo } from './ListingLogo'
+import { GlassCard } from '@/components/ui/glass-card'
+import { Badge, StatusBadge } from '@/components/ui/badge'
 import type { ListingPublic } from '@/lib/types'
 
 interface Props {
@@ -8,28 +10,28 @@ interface Props {
 
 export function ListingCard({ listing }: Props) {
   return (
-    <Link
-      href={`/listings/${listing.id}`}
-      className="group block rounded-lg border border-border hover:border-foreground/30 hover:shadow-sm transition-all overflow-hidden"
-    >
-      <div className="h-12 bg-muted flex items-center px-4">
-        <ListingLogo logoUrl={listing.logo_url} companyName={listing.company_name} />
-      </div>
-
-      <div className="p-4 space-y-2">
-        <div className="flex items-center justify-between">
-          <h2 className="font-semibold text-sm group-hover:underline">
+    <Link href={`/listings/${listing.id}`} className="group block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      <GlassCard interactive className="flex h-full flex-col overflow-hidden">
+        <div className="flex items-center gap-4 border-b border-border/60 bg-[hsl(var(--muted)/0.4)] px-5 py-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/60 bg-[hsl(var(--background)/0.5)]">
+            <ListingLogo logoUrl={listing.logo_url} companyName={listing.company_name} />
+          </div>
+          <h2 className="min-w-0 flex-1 truncate font-display text-base font-semibold text-foreground transition-colors group-hover:text-primary">
             {listing.company_name}
           </h2>
-          <span className="text-xs border border-border rounded px-1.5 py-0.5 text-muted-foreground capitalize">
-            {listing.listing_type}
-          </span>
         </div>
 
-        <p className="text-xs text-muted-foreground line-clamp-2">{listing.description}</p>
+        <div className="flex flex-1 flex-col gap-3 px-5 py-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge kind="listingType" value={listing.listing_type} />
+            <Badge tone="neutral">{listing.industry}</Badge>
+          </div>
 
-        <p className="text-xs text-muted-foreground">{listing.industry}</p>
-      </div>
+          <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+            {listing.description}
+          </p>
+        </div>
+      </GlassCard>
     </Link>
   )
 }

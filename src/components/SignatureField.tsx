@@ -1,6 +1,8 @@
 'use client'
 
 import { useRef, useEffect, useState } from 'react'
+import { Eraser } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 interface Props {
   onChange: (dataUrl: string | null) => void
@@ -68,28 +70,33 @@ export function SignatureField({ onChange }: Props) {
 
   return (
     <div className="space-y-2">
-      <canvas
-        ref={canvasRef}
-        data-testid="signature-canvas"
-        width={400}
-        height={150}
-        className="w-full border border-border rounded-lg cursor-crosshair touch-none bg-white"
-        onMouseDown={startDrawing}
-        onMouseMove={draw}
-        onMouseUp={stopDrawing}
-        onMouseLeave={stopDrawing}
-        onTouchStart={startDrawing}
-        onTouchMove={draw}
-        onTouchEnd={stopDrawing}
-      />
+      <div className="overflow-hidden rounded-xl border border-input bg-white/95 shadow-[inset_0_1px_3px_hsl(var(--primary)/0.08)]">
+        <canvas
+          ref={canvasRef}
+          data-testid="signature-canvas"
+          width={400}
+          height={150}
+          className="w-full cursor-crosshair touch-none"
+          onMouseDown={startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          onTouchStart={startDrawing}
+          onTouchMove={draw}
+          onTouchEnd={stopDrawing}
+        />
+      </div>
       {hasSignature && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={clearSignature}
-          className="text-xs text-muted-foreground hover:underline"
+          className="h-auto px-0 text-xs"
         >
+          <Eraser className="h-3.5 w-3.5" />
           Clear signature
-        </button>
+        </Button>
       )}
     </div>
   )
