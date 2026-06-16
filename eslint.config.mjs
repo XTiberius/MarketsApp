@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // design-sync converter inputs (compiled by esbuild, not app code).
+    ".design-sync/**",
   ]),
 ]);
 
