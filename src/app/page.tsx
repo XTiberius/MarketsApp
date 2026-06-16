@@ -1,25 +1,25 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, ShieldCheck, Sparkles, TrendingUp } from 'lucide-react'
+import { ArrowRight, BadgeCheck, Gem, Handshake } from 'lucide-react'
 import { getServerUser } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { GlassCard } from '@/components/ui/glass-card'
 
 const FEATURES = [
   {
-    icon: Sparkles,
-    title: 'Curated deal flow',
-    body: 'Hand-screened primary and secondary opportunities in venture-backed companies.',
+    icon: Gem,
+    title: 'Exclusive deals',
+    body: 'Invest in exclusive primary and secondary deals — access that isn’t on the open market.',
   },
   {
-    icon: ShieldCheck,
-    title: 'NDA-gated diligence',
-    body: 'Confidential valuations and terms unlock only after you sign — privacy by design.',
+    icon: BadgeCheck,
+    title: 'Pre-vetted opportunities',
+    body: 'Every opportunity is screened — across direct portfolio companies and IONIC Network managed vehicles.',
   },
   {
-    icon: TrendingUp,
-    title: 'Bid with confidence',
-    body: 'Place and track bids through to settlement, with status visible end to end.',
+    icon: Handshake,
+    title: 'White-glove execution',
+    body: 'From first interest to final allocation, every deal is handled end to end.',
   },
 ]
 
@@ -46,8 +46,8 @@ export default async function HomePage() {
         </h1>
 
         <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-          IONIC is a private venture marketplace to discover, bid on, and invest in individual
-          startup fund listings — primary and secondary.
+          IONIC is a private marketplace for exclusive primary and secondary deals — pre-vetted
+          opportunities across direct portfolio companies and IONIC Network managed vehicles.
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">

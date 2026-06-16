@@ -1,6 +1,8 @@
 import { requireAdmin } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { GlassCard } from '@/components/ui/glass-card'
+import { NewListingForm } from '@/components/NewListingForm'
+import type { Listing } from '@/lib/types'
 import { notFound } from 'next/navigation'
 
 interface Props {
@@ -12,13 +14,13 @@ export default async function AdminEditListingPage({ params }: Props) {
   const { id } = await params
 
   const isNew = id === 'new'
-  let listing = null
+  let listing: Listing | null = null
 
   if (!isNew) {
     const supabase = await createServerSupabaseClient()
     const { data } = await supabase.from('listings').select('*').eq('id', id).single()
     if (!data) notFound()
-    listing = data
+    listing = data as Listing
   }
 
   return (
@@ -27,9 +29,8 @@ export default async function AdminEditListingPage({ params }: Props) {
         {isNew ? 'Create Listing' : `Edit: ${listing?.company_name}`}
       </h1>
 
-      {/* TODO: ListingForm component */}
-      <GlassCard className="border-dashed p-8 text-center text-sm text-muted-foreground">
-        Listing form — coming soon
+      <GlassCard className="p-6 sm:p-8">
+        <NewListingForm listing={listing ?? undefined} />
       </GlassCard>
     </div>
   )

@@ -13,8 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import type { ListingType, ListingStatus } from '@/lib/types'
-import { isValidHttpUrl } from '@/lib/utils'
+import { LogoUploadField } from '@/components/LogoUploadField'
+import type { Listing, ListingType, ListingStatus } from '@/lib/types'
 
 type FormState = {
   company_name: string
@@ -36,23 +36,39 @@ const REQUIRED_FIELDS: (keyof FormState)[] = [
   'nda_text',
 ]
 
-export function NewListingForm() {
+export function NewListingForm({ listing }: { listing?: Listing }) {
   const router = useRouter()
+  const isEdit = !!listing
   const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState<string | null>(null)
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({})
-  const [form, setForm] = useState<FormState>({
-    company_name: '',
-    description: '',
-    industry: '',
-    listing_type: 'primary',
-    status: 'draft',
-    nda_text: '',
-    logo_url: '',
-    valuation: '',
-    amount_raised: '',
-    investment_structure: '',
-  })
+  const [form, setForm] = useState<FormState>(() =>
+    listing
+      ? {
+          company_name: listing.company_name,
+          description: listing.description,
+          industry: listing.industry,
+          listing_type: listing.listing_type,
+          status: listing.status,
+          nda_text: listing.nda_text,
+          logo_url: listing.logo_url ?? '',
+          valuation: listing.valuation?.toString() ?? '',
+          amount_raised: listing.amount_raised?.toString() ?? '',
+          investment_structure: listing.investment_structure ?? '',
+        }
+      : {
+          company_name: '',
+          description: '',
+          industry: '',
+          listing_type: 'primary',
+          status: 'draft',
+          nda_text: '',
+          logo_url: '',
+          valuation: '',
+          amount_raised: '',
+          investment_structure: '',
+        }
+  )
 
   function update<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -66,9 +82,6 @@ export function NewListingForm() {
     for (const field of REQUIRED_FIELDS) {
       if (!form[field].trim()) nextErrors[field] = 'This field is required'
     }
-    if (form.logo_url.trim() && !isValidHttpUrl(form.logo_url.trim())) {
-      nextErrors.logo_url = 'Enter a full URL starting with https:// (or leave blank)'
-    }
     for (const field of ['valuation', 'amount_raised'] as const) {
       const v = form[field].trim()
       if (v && (!Number.isFinite(Number(v)) || Number(v) < 0)) {
@@ -79,8 +92,8 @@ export function NewListingForm() {
     if (Object.keys(nextErrors).length > 0) return
 
     setLoading(true)
-    const res = await fetch('/api/listings', {
-      method: 'POST',
+    const res = await fetch(isEdit ? `/api/listings/${listing!.id}` : '/api/listings', {
+      method: isEdit ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         company_name: form.company_name.trim(),
@@ -98,7 +111,7 @@ export function NewListingForm() {
     const result = await res.json().catch(() => null)
 
     if (!res.ok) {
-      setApiError(result?.error ?? 'Failed to create listing')
+      setApiError(result?.error ?? 'Failed to save listing')
       setLoading(false)
       return
     }
@@ -193,19 +206,8 @@ export function NewListingForm() {
       </div>
 
       <div>
-        <Label htmlFor="logo_url" className="mb-1 block">
-          Logo URL
-        </Label>
-        <Input
-          id="logo_url"
-          type="url"
-          value={form.logo_url}
-          onChange={(e) => update('logo_url', e.target.value)}
-          placeholder="https://…"
-        />
-        {errors.logo_url && (
-          <p className="mt-1 text-xs text-danger">{errors.logo_url}</p>
-        )}
+        <Label className="mb-1 block">Logo</Label>
+        <LogoUploadField value={form.logo_url} onChange={(url) => update('logo_url', url)} />
       </div>
 
       <div>
@@ -285,7 +287,7 @@ export function NewListingForm() {
           type="submit"
           disabled={loading}
         >
-          {loading ? 'Creating…' : 'Create listing'}
+          {loading ? (isEdit ? 'Saving…' : 'Creating…') : isEdit ? 'Save changes' : 'Create listing'}
         </Button>
         <Button
           type="button"
