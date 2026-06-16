@@ -57,6 +57,7 @@ export function LogoUploadField({
       <div
         role="button"
         tabIndex={0}
+        data-testid="logo-upload-zone"
         onClick={() => inputRef.current?.click()}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -82,7 +83,12 @@ export function LogoUploadField({
       >
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={value} alt="Logo preview" className="h-12 w-auto object-contain" />
+          <img
+            src={value}
+            alt="Logo preview"
+            data-testid="logo-preview-image"
+            className="h-12 w-auto object-contain"
+          />
         ) : (
           <UploadCloud className="h-6 w-6 text-muted-foreground" />
         )}
@@ -98,6 +104,7 @@ export function LogoUploadField({
           ref={inputRef}
           type="file"
           accept="image/*"
+          data-testid="logo-file-input"
           className="hidden"
           onChange={(e) => {
             const f = e.target.files?.[0]
