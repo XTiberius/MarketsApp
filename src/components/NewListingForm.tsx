@@ -16,6 +16,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { LogoUploadField } from '@/components/LogoUploadField'
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/storage'
+import { uploadToPrivateBucket } from '@/lib/upload-client'
 import { formatCompactCurrency, formatDate } from '@/lib/utils'
 import type { Listing, ListingType, ListingStatus } from '@/lib/types'
 
@@ -215,13 +216,23 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
     ]
     for (const slot of docSlots) {
       if (!slot.file) continue
-      const body = new FormData()
-      body.append('file', slot.file)
-      body.append('doc_type', slot.doc_type)
-      await fetch(`/api/listings/${newId}/documents`, {
-        method: 'POST',
-        body,
-      }).catch(() => null)
+      const storagePath = `${newId}/${Date.now()}-${slot.doc_type}.pdf`
+      try {
+        // Upload straight to Storage (bypasses the serverless body limit), then
+        // record the metadata.
+        await uploadToPrivateBucket('listing-docs', storagePath, slot.file)
+        await fetch(`/api/listings/${newId}/documents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doc_type: slot.doc_type,
+            storage_path: storagePath,
+            file_name: slot.file.name,
+          }),
+        })
+      } catch {
+        // Best-effort: the admin completes/retries on the edit page.
+      }
     }
     for (const round of pendingRounds) {
       await fetch(`/api/listings/${newId}/rounds`, {

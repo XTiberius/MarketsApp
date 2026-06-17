@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { StatusBadge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/storage'
+import { uploadToPrivateBucket, removeFromBucket } from '@/lib/upload-client'
 import type { AssociatedDocument, Bid, BidStatus, DocumentType } from '@/lib/types'
 
 export type AdminBid = Bid & {
@@ -76,14 +77,25 @@ export function BidModuleAdmin({ bid: initialBid }: { bid: AdminBid }) {
       return
     }
     setBusy(true)
+    const ext = file.name.split('.').pop() ?? 'pdf'
+    const storagePath = `${bid.id}/${Date.now()}.${ext}`
     try {
-      const body = new FormData()
-      body.append('file', file)
-      body.append('bid_id', bid.id)
-      body.append('document_type', document_type)
-      const res = await fetch('/api/documents', { method: 'POST', body })
+      // Upload straight to Supabase Storage (bypasses the serverless body limit),
+      // then record only the metadata via the API.
+      await uploadToPrivateBucket('documents', storagePath, file)
+      const res = await fetch('/api/documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bid_id: bid.id,
+          document_type,
+          storage_path: storagePath,
+          file_name: file.name,
+        }),
+      })
       const data = await res.json().catch(() => null)
       if (!res.ok) {
+        await removeFromBucket('documents', storagePath)
         setError(data?.error ?? 'Upload failed')
         return
       }
@@ -97,6 +109,9 @@ export function BidModuleAdmin({ bid: initialBid }: { bid: AdminBid }) {
         associated_documents: [...(b.associated_documents ?? []), data],
       }))
       router.refresh()
+    } catch (e) {
+      await removeFromBucket('documents', storagePath)
+      setError(e instanceof Error ? e.message : 'Upload failed')
     } finally {
       setBusy(false)
     }

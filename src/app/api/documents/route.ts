@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { uploadPrivate, MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/storage'
 import { notifyBidEvent } from '@/lib/email'
 import type { DocumentType } from '@/lib/types'
 
@@ -63,25 +62,27 @@ export async function POST(req: NextRequest) {
   const { data: caller } = await supabase.from('users').select('role').eq('id', user.id).single()
   if (caller?.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const formData = await req.formData()
-  const file = formData.get('file') as File | null
-  const bid_id = formData.get('bid_id') as string | null
-  const document_type = formData.get('document_type') as DocumentType | null
+  // The file is uploaded to the private `documents` bucket DIRECTLY from the
+  // browser (so large PDFs bypass the serverless request-body limit); we receive
+  // only the metadata here.
+  const body = await req.json().catch(() => null)
+  const bid_id = typeof body?.bid_id === 'string' ? body.bid_id : null
+  const document_type = body?.document_type as DocumentType | null
+  const storage_path = typeof body?.storage_path === 'string' ? body.storage_path : ''
+  const file_name = typeof body?.file_name === 'string' ? body.file_name : ''
 
-  if (!file || !bid_id || !document_type) {
+  if (!bid_id || !document_type || !storage_path || !file_name) {
     return NextResponse.json(
-      { error: 'file, bid_id, and document_type are required' },
+      { error: 'bid_id, document_type, storage_path, and file_name are required' },
       { status: 400 }
     )
   }
   if (!VALID_TYPES.includes(document_type)) {
     return NextResponse.json({ error: 'Invalid document_type' }, { status: 400 })
   }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    return NextResponse.json(
-      { error: `File exceeds the ${MAX_UPLOAD_LABEL} limit` },
-      { status: 413 }
-    )
+  // The uploaded object must live under this bid's folder.
+  if (!storage_path.startsWith(`${bid_id}/`)) {
+    return NextResponse.json({ error: 'Invalid storage path' }, { status: 400 })
   }
 
   const { data: bid } = await supabase
@@ -91,24 +92,13 @@ export async function POST(req: NextRequest) {
     .single()
   if (!bid) return NextResponse.json({ error: 'Bid not found' }, { status: 404 })
 
-  const fileExt = file.name.split('.').pop()
-  const storagePath = `${bid_id}/${Date.now()}.${fileExt}`
-
-  let path: string
-  try {
-    path = await uploadPrivate(supabase, 'documents', storagePath, file)
-  } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Upload failed' },
-      { status: 500 }
-    )
-  }
+  const path = storage_path
 
   const { data: doc, error } = await supabase
     .from('associated_documents')
     .insert({
       bid_id,
-      file_name: file.name,
+      file_name,
       file_url: '',
       storage_path: path,
       document_type,
@@ -118,11 +108,7 @@ export async function POST(req: NextRequest) {
     .select()
     .single()
 
-  if (error) {
-    // Roll back the orphaned storage object so we don't leak files on insert failure.
-    await supabase.storage.from('documents').remove([path])
-    return NextResponse.json({ error: error.message }, { status: 400 })
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
   // NII received while the bid is `placed` → advance to pending_acceptance.
   // The PATCH route owns the state machine + its email, so call it server-side.

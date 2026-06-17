@@ -6,6 +6,7 @@ import { UploadCloud, FileText, X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/storage'
+import { uploadToPrivateBucket, removeFromBucket } from '@/lib/upload-client'
 import type { ListingDocument, ListingDocType } from '@/lib/types'
 
 const SLOTS: { type: Exclude<ListingDocType, 'other'>; label: string }[] = [
@@ -68,6 +69,7 @@ function DocumentSlot({
       return
     }
     setBusy(true)
+    const storagePath = `${listingId}/${Date.now()}.pdf`
     try {
       // Replace: remove the existing document first so there's one per slot.
       if (existing) {
@@ -75,20 +77,23 @@ function DocumentSlot({
           method: 'DELETE',
         })
       }
-      const body = new FormData()
-      body.append('file', file)
-      body.append('doc_type', docType)
+      // Upload the file straight to Supabase Storage (bypasses the serverless
+      // body limit), then record only the metadata via the API.
+      await uploadToPrivateBucket('listing-docs', storagePath, file)
       const res = await fetch(`/api/listings/${listingId}/documents`, {
         method: 'POST',
-        body,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doc_type: docType, storage_path: storagePath, file_name: file.name }),
       })
       if (!res.ok) {
+        await removeFromBucket('listing-docs', storagePath)
         const data = await res.json().catch(() => null)
         setError(data?.error ?? 'Upload failed')
         return
       }
       onChange()
     } catch (e) {
+      await removeFromBucket('listing-docs', storagePath)
       setError(e instanceof Error ? e.message : 'Upload failed')
     } finally {
       setBusy(false)
