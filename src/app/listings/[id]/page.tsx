@@ -7,10 +7,11 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { BidModal } from '@/components/BidModal'
 import { NDAModal } from '@/components/NDAModal'
 import { ListingLogo } from '@/components/ListingLogo'
+import { FundingRoundsChart } from '@/components/FundingRoundsChart'
 import { GlassCard } from '@/components/ui/glass-card'
 import { Badge, StatusBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import type { ListingDocument, ListingDocType } from '@/lib/types'
+import type { ListingDocument, ListingDocType, FundingRound } from '@/lib/types'
 import {
   Accordion,
   AccordionItem,
@@ -45,8 +46,10 @@ export default async function ListingDetailPage({ params }: Props) {
     .maybeSingle()
   const ndaSigned = !!nda
 
-  // Informational documents are NDA-gated by RLS; only query once unlocked.
+  // Informational documents and funding rounds are NDA-gated by RLS; only query
+  // once unlocked.
   let documents: ListingDocument[] = []
+  let rounds: FundingRound[] = []
   if (ndaSigned) {
     const { data: docs } = await supabase
       .from('listing_documents')
@@ -54,6 +57,13 @@ export default async function ListingDetailPage({ params }: Props) {
       .eq('listing_id', id)
       .order('created_at', { ascending: true })
     documents = (docs as ListingDocument[] | null) ?? []
+
+    const { data: roundRows } = await supabase
+      .from('funding_rounds')
+      .select('*')
+      .eq('listing_id', id)
+      .order('sequence_order', { ascending: true })
+    rounds = (roundRows as FundingRound[] | null) ?? []
   }
 
   const DOC_TYPE_LABELS: Record<ListingDocType, string> = {
@@ -198,6 +208,15 @@ export default async function ListingDetailPage({ params }: Props) {
                     No documents have been shared for this listing yet.
                   </p>
                 )}
+              </AccordionContent>
+            </AccordionItem>
+          )}
+
+          {ndaSigned && (
+            <AccordionItem value="fundraising">
+              <AccordionTrigger>Fundraising History</AccordionTrigger>
+              <AccordionContent>
+                <FundingRoundsChart rounds={rounds} />
               </AccordionContent>
             </AccordionItem>
           )}

@@ -3,7 +3,8 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { GlassCard } from '@/components/ui/glass-card'
 import { NewListingForm } from '@/components/NewListingForm'
 import { ListingDocumentsManager } from '@/components/ListingDocumentsManager'
-import type { Listing, ListingDocument } from '@/lib/types'
+import { FundingRoundsManager } from '@/components/FundingRoundsManager'
+import type { Listing, ListingDocument, FundingRound } from '@/lib/types'
 import { notFound } from 'next/navigation'
 
 interface Props {
@@ -17,6 +18,7 @@ export default async function AdminEditListingPage({ params }: Props) {
   const isNew = id === 'new'
   let listing: Listing | null = null
   let documents: ListingDocument[] = []
+  let rounds: FundingRound[] = []
 
   if (!isNew) {
     const supabase = await createServerSupabaseClient()
@@ -30,6 +32,13 @@ export default async function AdminEditListingPage({ params }: Props) {
       .eq('listing_id', id)
       .order('created_at', { ascending: true })
     documents = (docs as ListingDocument[] | null) ?? []
+
+    const { data: roundRows } = await supabase
+      .from('funding_rounds')
+      .select('*')
+      .eq('listing_id', id)
+      .order('sequence_order', { ascending: true })
+    rounds = (roundRows as FundingRound[] | null) ?? []
   }
 
   return (
@@ -53,6 +62,20 @@ export default async function AdminEditListingPage({ params }: Props) {
             </p>
           </div>
           <ListingDocumentsManager listingId={listing.id} documents={documents} />
+        </GlassCard>
+      )}
+
+      {!isNew && listing && (
+        <GlassCard className="mt-6 p-6 sm:p-8">
+          <div className="mb-5 space-y-1">
+            <h2 className="text-sm font-semibold text-foreground">
+              Fundraising Rounds
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Valuation history shown to investors after they sign the NDA.
+            </p>
+          </div>
+          <FundingRoundsManager listingId={listing.id} rounds={rounds} />
         </GlassCard>
       )}
     </div>

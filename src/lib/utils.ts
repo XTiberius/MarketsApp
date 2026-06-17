@@ -13,6 +13,17 @@ export function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
+/** Compact USD for large figures, e.g. 2_400_000_000 → "$2.4B", 400_000_000 → "$400M".
+ *  Used for funding-round valuations on charts/axes where space is tight. */
+export function formatCompactCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(amount)
+}
+
 export function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat('en-US', {
     year: 'numeric',
