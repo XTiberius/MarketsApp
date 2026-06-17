@@ -85,3 +85,29 @@ config files) are **managed**: do not edit them in place — propose changes in 
 repos. If a managed section looks stale, hand-edited, or wrong, tell the user to run the
 Brain's audit ("audit projects" — the `operate` skill).
 <!-- END:brain:agent-wiring -->
+
+<!-- BEGIN:brain:claude-code-autonomy v1 — managed by ~/Brain; do not edit here, propose changes in the Brain -->
+# Claude Code autonomy
+
+**Everyday:** safe read-only inspection commands are prompt-free via the global allowlist in
+`~/.claude/settings.json` (`permissions.allow`, managed by the Brain's `claude-code-autonomy`
+process).
+
+**Trusted, self-contained vendor skills** that run a long, mechanical sequence (e.g. Claude
+Design's `/design-sync`): launch with **acceptEdits** so file writes don't each prompt —
+
+```
+claude --permission-mode acceptEdits
+```
+
+This auto-accepts file edits while still prompting on Bash commands, so you stay in the loop on
+anything that executes. Run it in a **clean git tree** so the work is `git`-revertible.
+
+`--dangerously-skip-permissions` (zero prompts) is a deliberate, per-run escape hatch — use it
+only when you personally decide a specific trusted run warrants it, **never as a standing
+default.** The machine's `permissions.deny` rules and the PreToolUse guard hook stay enforced in
+every mode.
+
+Full procedure + the Claude Design `/design-sync` gotchas: the Brain's `vendor-skill-autonomy`
+runbook.
+<!-- END:brain:claude-code-autonomy -->
