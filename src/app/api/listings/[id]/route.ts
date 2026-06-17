@@ -121,6 +121,7 @@ export async function PATCH(
         typeof body.investment_structure === 'string' && body.investment_structure.trim()
           ? body.investment_structure.trim()
           : null,
+      ai_newsfeed_enabled: body.ai_newsfeed_enabled === true,
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)

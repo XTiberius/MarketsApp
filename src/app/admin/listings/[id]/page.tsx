@@ -4,7 +4,8 @@ import { GlassCard } from '@/components/ui/glass-card'
 import { NewListingForm } from '@/components/NewListingForm'
 import { ListingDocumentsManager } from '@/components/ListingDocumentsManager'
 import { FundingRoundsManager } from '@/components/FundingRoundsManager'
-import type { Listing, ListingDocument, FundingRound } from '@/lib/types'
+import { NewsfeedAdminPanel } from '@/components/admin/NewsfeedAdminPanel'
+import type { Listing, ListingDocument, FundingRound, ListingNewsfeed } from '@/lib/types'
 import { notFound } from 'next/navigation'
 
 interface Props {
@@ -19,6 +20,7 @@ export default async function AdminEditListingPage({ params }: Props) {
   let listing: Listing | null = null
   let documents: ListingDocument[] = []
   let rounds: FundingRound[] = []
+  let newsfeed: ListingNewsfeed | null = null
 
   if (!isNew) {
     const supabase = await createServerSupabaseClient()
@@ -39,6 +41,13 @@ export default async function AdminEditListingPage({ params }: Props) {
       .eq('listing_id', id)
       .order('sequence_order', { ascending: true })
     rounds = (roundRows as FundingRound[] | null) ?? []
+
+    const { data: newsfeedRow } = await supabase
+      .from('listing_newsfeed')
+      .select('*')
+      .eq('listing_id', id)
+      .maybeSingle()
+    newsfeed = (newsfeedRow as ListingNewsfeed | null) ?? null
   }
 
   return (
@@ -76,6 +85,22 @@ export default async function AdminEditListingPage({ params }: Props) {
             </p>
           </div>
           <FundingRoundsManager listingId={listing.id} rounds={rounds} />
+        </GlassCard>
+      )}
+
+      {!isNew && listing && (
+        <GlassCard className="mt-6 p-6 sm:p-8">
+          <div className="mb-5 space-y-1">
+            <h2 className="text-sm font-semibold text-foreground">AI Newsfeed</h2>
+            <p className="text-xs text-muted-foreground">
+              AI-generated research bullets shown to investors after they sign the NDA.
+            </p>
+          </div>
+          <NewsfeedAdminPanel
+            listingId={listing.id}
+            enabled={listing.ai_newsfeed_enabled}
+            newsfeed={newsfeed}
+          />
         </GlassCard>
       )}
     </div>

@@ -8,10 +8,16 @@ import { BidModal } from '@/components/BidModal'
 import { NDAModal } from '@/components/NDAModal'
 import { ListingLogo } from '@/components/ListingLogo'
 import { FundingRoundsChart } from '@/components/FundingRoundsChart'
+import { NewsfeedSummary } from '@/components/NewsfeedSummary'
 import { GlassCard } from '@/components/ui/glass-card'
 import { Badge, StatusBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import type { ListingDocument, ListingDocType, FundingRound } from '@/lib/types'
+import type {
+  ListingDocument,
+  ListingDocType,
+  FundingRound,
+  ListingNewsfeed,
+} from '@/lib/types'
 import {
   Accordion,
   AccordionItem,
@@ -50,6 +56,7 @@ export default async function ListingDetailPage({ params }: Props) {
   // once unlocked.
   let documents: ListingDocument[] = []
   let rounds: FundingRound[] = []
+  let newsfeed: ListingNewsfeed | null = null
   if (ndaSigned) {
     const { data: docs } = await supabase
       .from('listing_documents')
@@ -64,6 +71,15 @@ export default async function ListingDetailPage({ params }: Props) {
       .eq('listing_id', id)
       .order('sequence_order', { ascending: true })
     rounds = (roundRows as FundingRound[] | null) ?? []
+
+    if (listing.ai_newsfeed_enabled) {
+      const { data: newsfeedRow } = await supabase
+        .from('listing_newsfeed')
+        .select('*')
+        .eq('listing_id', id)
+        .maybeSingle()
+      newsfeed = (newsfeedRow as ListingNewsfeed | null) ?? null
+    }
   }
 
   const DOC_TYPE_LABELS: Record<ListingDocType, string> = {
@@ -222,6 +238,14 @@ export default async function ListingDetailPage({ params }: Props) {
           )}
         </Accordion>
       </GlassCard>
+
+      {ndaSigned && listing.ai_newsfeed_enabled && newsfeed && (
+        <NewsfeedSummary
+          bullets={newsfeed.bullets}
+          disclosure={newsfeed.disclosure}
+          generatedAt={newsfeed.generated_at}
+        />
+      )}
 
       {/* Bid CTA */}
       {ndaSigned && (

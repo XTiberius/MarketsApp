@@ -113,6 +113,7 @@ export async function POST(req: NextRequest) {
         typeof body.investment_structure === 'string' && body.investment_structure.trim()
           ? body.investment_structure.trim()
           : null,
+      ai_newsfeed_enabled: body.ai_newsfeed_enabled === true,
     })
     .select()
     .single()

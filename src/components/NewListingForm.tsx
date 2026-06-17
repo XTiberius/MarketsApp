@@ -28,9 +28,15 @@ type FormState = {
   amount_raised: string
   minimum_investment: string
   investment_structure: string
+  ai_newsfeed_enabled: boolean
 }
 
-const REQUIRED_FIELDS: (keyof FormState)[] = [
+type RequiredTextField = Extract<
+  keyof FormState,
+  'company_name' | 'description' | 'industry' | 'nda_text'
+>
+
+const REQUIRED_FIELDS: RequiredTextField[] = [
   'company_name',
   'description',
   'industry',
@@ -57,6 +63,7 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
           amount_raised: listing.amount_raised?.toString() ?? '',
           minimum_investment: listing.minimum_investment?.toString() ?? '',
           investment_structure: listing.investment_structure ?? '',
+          ai_newsfeed_enabled: listing.ai_newsfeed_enabled,
         }
       : {
           company_name: '',
@@ -70,6 +77,7 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
           amount_raised: '',
           minimum_investment: '',
           investment_structure: '',
+          ai_newsfeed_enabled: false,
         }
   )
 
@@ -83,7 +91,9 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
 
     const nextErrors: Partial<Record<keyof FormState, string>> = {}
     for (const field of REQUIRED_FIELDS) {
-      if (!form[field].trim()) nextErrors[field] = 'This field is required'
+      if (!form[field].trim()) {
+        nextErrors[field] = 'This field is required'
+      }
     }
     for (const field of ['valuation', 'amount_raised', 'minimum_investment'] as const) {
       const v = form[field].trim()
@@ -111,6 +121,7 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
         minimum_investment:
           form.minimum_investment === '' ? null : Number(form.minimum_investment),
         investment_structure: form.investment_structure.trim() || null,
+        ai_newsfeed_enabled: form.ai_newsfeed_enabled,
       }),
     })
     const result = await res.json().catch(() => null)
@@ -214,6 +225,25 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
         <Label className="mb-1 block">Logo</Label>
         <LogoUploadField value={form.logo_url} onChange={(url) => update('logo_url', url)} />
       </div>
+
+      <label
+        htmlFor="ai_newsfeed_enabled"
+        className="flex items-start gap-3 rounded-xl border border-border p-4"
+      >
+        <input
+          id="ai_newsfeed_enabled"
+          type="checkbox"
+          checked={form.ai_newsfeed_enabled}
+          onChange={(e) => update('ai_newsfeed_enabled', e.target.checked)}
+          className="mt-1 h-4 w-4 rounded border-border accent-[hsl(var(--primary))]"
+        />
+        <span className="space-y-1">
+          <span className="block text-sm font-medium text-foreground">AI Newsfeed</span>
+          <span className="block text-xs text-muted-foreground">
+            Show the generated newsfeed summary to investors after they sign the NDA.
+          </span>
+        </span>
+      </label>
 
       <div>
         <Label htmlFor="nda_text" className="mb-1 block">
