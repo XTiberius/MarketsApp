@@ -35,6 +35,11 @@ export async function Navbar() {
               My Bids
             </Link>
           )}
+          {user && (
+            <Link href="/portfolio" className={navLink}>
+              Portfolio
+            </Link>
+          )}
         </div>
 
         <div className="flex items-center gap-2">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { UploadCloud, FileText, X, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { StatusBadge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
@@ -142,6 +143,11 @@ export function BidModuleAdmin({ bid: initialBid }: { bid: AdminBid }) {
 
       {/* ── All uploaded documents, grouped by category ── */}
       <DocumentList docs={docs} busy={busy} onRemove={removeDoc} />
+
+      {/* ── Close / liquidate (post-investment position management) ── */}
+      {bid.status === 'invested' && (
+        <ClosePosition bid={bid} onClosed={(b) => setBid((prev) => ({ ...prev, ...b }))} />
+      )}
 
       {error && <p className="text-sm text-danger">{error}</p>}
     </div>
@@ -340,6 +346,142 @@ function AwaitingPaymentAction({
           </Button>
         </div>
       </div>
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+/* Close / liquidate an invested position.                                    */
+/* -------------------------------------------------------------------------- */
+
+/** ROI = (returned − invested) / invested, signed percentage. Null when invested
+ *  principal is missing or zero. */
+function roiPercent(invested: number | null, returned: number | null): number | null {
+  if (invested == null || invested === 0 || returned == null) return null
+  return ((returned - invested) / invested) * 100
+}
+
+function ClosePosition({
+  bid,
+  onClosed,
+}: {
+  bid: AdminBid
+  onClosed: (bid: Partial<AdminBid>) => void
+}) {
+  const router = useRouter()
+  const [invested, setInvested] = useState('')
+  const [returned, setReturned] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  if (bid.portfolio_status === 'closed') {
+    const roi = roiPercent(bid.invested_principal, bid.returned_principal)
+    return (
+      <div className="rounded-xl border border-border bg-muted/30 p-4">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Position closed
+        </p>
+        <dl className="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+          <div>
+            <dt className="text-muted-foreground">Invested</dt>
+            <dd className="font-mono text-foreground">
+              {bid.invested_principal != null ? formatCurrency(bid.invested_principal) : '—'}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Returned</dt>
+            <dd className="font-mono text-foreground">
+              {bid.returned_principal != null ? formatCurrency(bid.returned_principal) : '—'}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">ROI</dt>
+            <dd className="font-mono">
+              {roi == null ? (
+                <span className="text-muted-foreground">—</span>
+              ) : (
+                <span className={roi >= 0 ? 'text-success' : 'text-danger'}>
+                  {`${roi >= 0 ? '+' : ''}${roi.toFixed(1)}%`}
+                </span>
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Closed</dt>
+            <dd className="text-foreground">
+              {bid.closed_at ? formatDate(bid.closed_at) : '—'}
+            </dd>
+          </div>
+        </dl>
+      </div>
+    )
+  }
+
+  if (bid.portfolio_status !== 'active') return null
+
+  async function submit() {
+    setError(null)
+    setBusy(true)
+    try {
+      const res = await fetch(`/api/bids/${bid.id}/close`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invested_principal: Number(invested),
+          returned_principal: Number(returned),
+        }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        setError(data?.error ?? 'Close failed')
+        return
+      }
+      onClosed(data)
+      router.refresh()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+      <p className="text-sm text-muted-foreground">
+        Close / liquidate this position by recording the realized principal.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5">
+          <Label htmlFor={`invested-${bid.id}`}>Invested principal</Label>
+          <Input
+            id={`invested-${bid.id}`}
+            type="number"
+            min={0}
+            value={invested}
+            onChange={(e) => setInvested(e.target.value)}
+            disabled={busy}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor={`returned-${bid.id}`}>Returned principal</Label>
+          <Input
+            id={`returned-${bid.id}`}
+            type="number"
+            min={0}
+            value={returned}
+            onChange={(e) => setReturned(e.target.value)}
+            disabled={busy}
+          />
+        </div>
+      </div>
+      <Button
+        type="button"
+        variant="primary"
+        size="sm"
+        disabled={busy || invested === '' || returned === ''}
+        onClick={submit}
+      >
+        {busy ? 'Closing…' : 'Close position'}
+      </Button>
+      {error && <p className="text-sm text-danger">{error}</p>}
     </div>
   )
 }

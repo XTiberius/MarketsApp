@@ -32,6 +32,7 @@ export function MobileMenu({ isSignedIn, isAdmin }: { isSignedIn: boolean; isAdm
                 <Link href="/admin/dashboard" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Admin</Link>
               )}
               <Link href="/bids" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">My Bids</Link>
+              <Link href="/portfolio" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Portfolio</Link>
               <Link href="/profile" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Profile</Link>
               <div className="px-3 py-2"><SignOutButton /></div>
             </>
