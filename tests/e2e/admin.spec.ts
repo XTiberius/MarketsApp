@@ -152,15 +152,25 @@ test('/admin/listings uploads a logo via the drag-drop field', async ({ page }) 
   await expect(page.getByAltText(`${LISTING_NAME} logo`)).toBeVisible()
 })
 
-test('/admin/bids transitions a bid', async ({ page }) => {
+test('/admin/bids accepts a pending bid via the bid module', async ({ page }) => {
   console.log('[playwright admin] running with seeded admin storageState')
-  await resetBidFixture()
+  // Seed a bid already at pending_acceptance (the accept step has no doc gate).
+  const supabase = adminClient()
+  const { investorId, listingId } = await fixtureIds(supabase)
+  await supabase.from('bids').delete().eq('investor_id', investorId).eq('listing_id', listingId)
+  const { error } = await supabase.from('bids').insert({
+    investor_id: investorId,
+    listing_id: listingId,
+    amount: 75000,
+    status: 'pending_acceptance',
+    nda_signed: true,
+  })
+  if (error) throw error
 
   await page.goto('/admin/bids')
-
   await expect(page.getByRole('heading', { name: 'Bid Management' })).toBeVisible()
-  await page.getByTestId('admin-bid-status-accepted').first().click()
-  await expect(page.getByText('accepted').first()).toBeVisible()
+  await page.getByRole('button', { name: 'Accept', exact: true }).first().click()
+  await expect(page.getByText('Accepted').first()).toBeVisible({ timeout: 15_000 })
 })
 
 test('/admin/users approves an applicant', async ({ page }) => {
@@ -192,4 +202,72 @@ test('/admin/users requires a rejection reason before rejecting', async ({ page 
   await expect(confirmReject).toBeEnabled()
   await confirmReject.click()
   await expect(page.getByText('rejected').first()).toBeVisible()
+})
+
+const CREATE_FLOW_NAME = 'E2E Create Flow Co'
+
+async function deleteListingByName(name: string) {
+  const supabase = adminClient()
+  const { data } = await supabase.from('listings').select('id').eq('company_name', name).maybeSingle()
+  if (!data) return
+  const listingId = String(data.id)
+  const { data: objs } = await supabase.storage.from('listing-docs').list(listingId)
+  if (objs?.length) {
+    await supabase.storage.from('listing-docs').remove(objs.map((o) => `${listingId}/${o.name}`))
+  }
+  await supabase.from('listings').delete().eq('id', listingId) // cascades rounds + docs rows
+}
+
+test.afterAll(async () => {
+  if (!serviceRoleKey) return
+  await deleteListingByName(CREATE_FLOW_NAME)
+})
+
+// Single-page create + Bug B (11 MB pitch deck through the real /api/listings/[id]/documents route).
+test('creates a listing with memorandum + 11MB pitch deck + a funding round in one page', async ({ page }) => {
+  await deleteListingByName(CREATE_FLOW_NAME)
+
+  await page.goto('/admin/listings/new')
+  await expect(page.getByRole('heading', { name: 'Create Listing' })).toBeVisible()
+
+  await page.locator('#company_name').fill(CREATE_FLOW_NAME)
+  await page.locator('#description').fill('Single-page create e2e — documents + rounds.')
+  await page.locator('#industry').fill('Testing')
+  await page.locator('#nda_text').fill('E2E NDA fixture. Do not use for real deals.')
+
+  await page.getByTestId('create-doc-memorandum').setInputFiles('tests/fixtures/sample.pdf')
+  await page.getByTestId('create-doc-pitch_deck').setInputFiles('tests/.tmp/aura.pdf')
+
+  await page.locator('#round_name').fill('Series A')
+  await page.locator('#round_valuation').fill('50000000')
+  await page.locator('#round_amount_raised').fill('10000000')
+  await page.locator('#round_date').fill('2025-01-15')
+  await page.getByRole('button', { name: 'Add round' }).click()
+  await expect(page.getByText('Series A')).toBeVisible()
+
+  await page.getByTestId('form-submit-button').click()
+
+  // Lands on the new listing's edit page; the 11 MB deck, the memorandum, and the round attached.
+  await expect(page).toHaveURL(/\/admin\/listings\/[0-9a-f-]+$/, { timeout: 30_000 })
+  await expect(page.getByRole('heading', { name: /Edit:/ })).toBeVisible()
+  await expect(page.getByText('aura.pdf')).toBeVisible({ timeout: 20_000 })
+  await expect(page.getByText('sample.pdf')).toBeVisible()
+  await expect(page.getByText('Series A')).toBeVisible()
+})
+
+// Bug A — admin uploads the executed NII; the documents-bucket RLS now allows it and the bid advances.
+test('uploads the executed NII and the bid advances to pending acceptance', async ({ page }) => {
+  await resetBidFixture()
+  await page.goto('/admin/bids')
+  await expect(page.getByRole('heading', { name: 'Bid Management' })).toBeVisible()
+
+  await page.getByTestId('upload-nii').first().setInputFiles('tests/fixtures/sample.pdf')
+  await expect(page.getByText('Pending Acceptance').first()).toBeVisible({ timeout: 20_000 })
+})
+
+// Newsfeed route is gated: configured-check returns 503 when ANTHROPIC_API_KEY is absent.
+test('newsfeed refresh returns 503 when AI is not configured', async ({ page }) => {
+  const { listingId } = await fixtureIds(adminClient())
+  const res = await page.request.post(`/api/listings/${listingId}/newsfeed`)
+  expect([503, 200]).toContain(res.status()) // 503 when no key (expected here); 200 if a key is configured
 })

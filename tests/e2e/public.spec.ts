@@ -1,33 +1,26 @@
 import { expect, test } from '@playwright/test'
 
-test('home loads', async ({ page }) => {
+// The app is authenticated-only (migration 011): the landing is the sole public
+// surface; listings and detail pages redirect signed-out visitors away.
+
+test('landing loads for signed-out visitors', async ({ page }) => {
   await page.goto('/')
 
-  await expect(page.getByRole('heading', { name: 'Venture Marketplace' })).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Browse Listings' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'IONIC home' }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Get started' }).first()).toBeVisible()
 })
 
-test('/listings renders a grid or empty state', async ({ page }) => {
+test('listings require authentication (signed-out cannot see the grid)', async ({ page }) => {
   await page.goto('/listings')
 
-  await expect(page.getByRole('heading', { name: 'Active Listings' })).toBeVisible()
-
-  const emptyState = page.getByText('No active listings at this time.')
-  const listingLink = page.locator('main').getByRole('link').first()
-
-  await expect(emptyState.or(listingLink)).toBeVisible()
+  // Gated: the listings grid is never shown to signed-out visitors.
+  await expect(page.getByRole('heading', { name: 'Active Listings' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Sign in' }).first()).toBeVisible()
 })
 
-test('a listing detail shows the NDA gate', async ({ page }) => {
-  await page.goto('/listings')
+test('a listing detail requires authentication', async ({ page }) => {
+  await page.goto('/listings/00000000-0000-0000-0000-000000000000')
 
-  const emptyState = page.getByText('No active listings at this time.')
-  if (await emptyState.isVisible()) {
-    test.skip(true, 'No published listings are available for public detail coverage')
-  }
-
-  await page.locator('main').getByRole('link').first().click()
-
-  await expect(page.getByText('Sign the NDA to unlock valuation, deal terms, and financial details')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Sign in to view details' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Active Listings' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Sign in' }).first()).toBeVisible()
 })

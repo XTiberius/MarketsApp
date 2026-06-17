@@ -161,3 +161,90 @@ test('places bids with minimum validation and success state', async ({ page }) =
   await page.getByTestId('bid-submit-button').click()
   await expect(page.getByText('Bid placed!')).toBeVisible()
 })
+
+// Seed an invested position with everything the portfolio module embeds, then verify it renders.
+async function seedInvestedPosition() {
+  const supabase = adminClient()
+  const { investorId, listingId } = await fixtureIds(supabase)
+
+  // NDA (required by funding_rounds / newsfeed RLS) + published + newsfeed enabled.
+  await supabase.from('nda_signatures').delete().eq('investor_id', investorId).eq('listing_id', listingId)
+  await supabase.from('nda_signatures').insert({
+    investor_id: investorId,
+    listing_id: listingId,
+    signature_image_url: 'https://example.test/e2e-signature.png',
+  })
+  {
+    const { error } = await supabase
+      .from('listings')
+      .update({ status: 'published', ai_newsfeed_enabled: true })
+      .eq('id', listingId)
+    if (error) throw error
+  }
+
+  // Funding rounds (chart) + newsfeed cache (display; no AI key needed to seed the row).
+  await supabase.from('funding_rounds').delete().eq('listing_id', listingId)
+  {
+    const { error } = await supabase.from('funding_rounds').insert([
+      { listing_id: listingId, round_name: 'Seed', valuation: 5_000_000, amount_raised: 1_000_000, event_date: '2023-06-01', sequence_order: 0 },
+      { listing_id: listingId, round_name: 'Series A', valuation: 20_000_000, amount_raised: 8_000_000, event_date: '2024-09-01', sequence_order: 1 },
+    ])
+    if (error) throw error
+  }
+  await supabase.from('listing_newsfeed').delete().eq('listing_id', listingId)
+  {
+    const { error } = await supabase.from('listing_newsfeed').insert({
+      listing_id: listingId,
+      bullets: [{ text: 'E2E newsfeed bullet one.' }, { text: 'E2E newsfeed bullet two.' }],
+      disclosure: 'This is AI generated.',
+      generated_at: new Date().toISOString(),
+    })
+    if (error) throw error
+  }
+
+  // Invested (active) bid + a bid document.
+  await supabase.from('bids').delete().eq('investor_id', investorId).eq('listing_id', listingId)
+  const { data: bid, error } = await supabase
+    .from('bids')
+    .insert({
+      investor_id: investorId,
+      listing_id: listingId,
+      amount: 75000,
+      status: 'invested',
+      portfolio_status: 'active',
+      invested_at: new Date().toISOString(),
+      nda_signed: true,
+    })
+    .select('id')
+    .single()
+  if (error) throw error
+  await supabase.from('associated_documents').insert({
+    bid_id: bid.id,
+    file_name: 'investment-agreement.pdf',
+    file_url: '',
+    storage_path: `${bid.id}/seed.pdf`,
+    document_type: 'investment_doc',
+    uploaded_by: investorId,
+    uploaded_at: new Date().toISOString(),
+  })
+}
+
+test('portfolio shows the invested position with documents, chart, newsfeed, and an Executed badge', async ({ page }) => {
+  await seedInvestedPosition()
+
+  await page.goto('/portfolio')
+  await expect(page.getByRole('heading', { name: 'Portfolio' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Active' })).toBeVisible()
+  await expect(page.getByText(LISTING_NAME)).toBeVisible()
+  await expect(page.getByText(/^Executed /)).toBeVisible() // invested-date badge
+  await expect(page.getByText('investment-agreement.pdf')).toBeVisible() // bid documents
+  await expect(page.getByText('Series A')).toBeVisible() // funding chart point label
+  await expect(page.getByText('AI Newsfeed Summary')).toBeVisible() // newsfeed module
+  await expect(page.getByText('E2E newsfeed bullet one.')).toBeVisible()
+})
+
+test('newsfeed refresh is forbidden for non-admins', async ({ page }) => {
+  const { listingId } = await fixtureIds(adminClient())
+  const res = await page.request.post(`/api/listings/${listingId}/newsfeed`)
+  expect(res.status()).toBe(403)
+})
