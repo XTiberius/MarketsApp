@@ -19,9 +19,15 @@ alter type document_type add value if not exists 'investment_doc';       -- exec
 alter type document_type add value if not exists 'payment_instructions'; -- payment instructions PDF
 alter type document_type add value if not exists 'filing';               -- post-invested filings (K-1s, etc.)
 
--- New enums
-create type listing_doc_type as enum ('memorandum', 'pitch_deck', 'other');
-create type portfolio_status as enum ('active', 'closed');
+-- New enums (guarded so the migration is safe to re-run)
+do $$ begin
+  if not exists (select 1 from pg_type where typname = 'listing_doc_type') then
+    create type listing_doc_type as enum ('memorandum', 'pitch_deck', 'other');
+  end if;
+  if not exists (select 1 from pg_type where typname = 'portfolio_status') then
+    create type portfolio_status as enum ('active', 'closed');
+  end if;
+end $$;
 
 -- ─── Listings: minimum investment + AI newsfeed toggle ────────────────────────
 alter table public.listings
@@ -43,8 +49,8 @@ alter table public.associated_documents
   add column if not exists storage_path text;
 
 -- ─── Listing documents (memorandum + pitch deck), NDA-gated ───────────────────
-create table public.listing_documents (
-  id           uuid             primary key default uuid_generate_v4(),
+create table if not exists public.listing_documents (
+  id           uuid             primary key default gen_random_uuid(),
   listing_id   uuid             not null references public.listings(id) on delete cascade,
   doc_type     listing_doc_type not null,
   file_name    text             not null,
@@ -55,8 +61,8 @@ create table public.listing_documents (
 create index listing_documents_listing_idx on public.listing_documents(listing_id);
 
 -- ─── Fundraising rounds (chart points) ────────────────────────────────────────
-create table public.funding_rounds (
-  id             uuid          primary key default uuid_generate_v4(),
+create table if not exists public.funding_rounds (
+  id             uuid          primary key default gen_random_uuid(),
   listing_id     uuid          not null references public.listings(id) on delete cascade,
   round_name     text          not null,                -- e.g. "Seed", "Series A"
   valuation      numeric(20,2) not null,
@@ -67,8 +73,8 @@ create table public.funding_rounds (
 create index funding_rounds_listing_idx on public.funding_rounds(listing_id);
 
 -- ─── AI newsfeed cache (one per listing) ──────────────────────────────────────
-create table public.listing_newsfeed (
-  id           uuid        primary key default uuid_generate_v4(),
+create table if not exists public.listing_newsfeed (
+  id           uuid        primary key default gen_random_uuid(),
   listing_id   uuid        not null references public.listings(id) on delete cascade,
   bullets      jsonb       not null default '[]',       -- array of { text }
   disclosure   text        not null default '',
