@@ -20,6 +20,9 @@ export async function Navbar() {
         <Logo />
 
         <div className="hidden items-center gap-1 text-sm md:flex">
+          <Link href="/team" className={navLink}>
+            Team
+          </Link>
           {user && (
             <Link href="/listings" className={navLink}>
               Listings

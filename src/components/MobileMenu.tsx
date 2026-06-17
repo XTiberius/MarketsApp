@@ -25,6 +25,7 @@ export function MobileMenu({ isSignedIn, isAdmin }: { isSignedIn: boolean; isAdm
           className="absolute left-0 right-0 top-16 mx-3 mt-2 flex flex-col gap-1 rounded-2xl border border-border/60 bg-[hsl(var(--popover)/0.92)] p-3 backdrop-blur-xl"
           onClick={() => setOpen(false)}
         >
+          <Link href="/team" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Team</Link>
           {isSignedIn ? (
             <>
               <Link href="/listings" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Listings</Link>

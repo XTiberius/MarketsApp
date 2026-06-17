@@ -15,7 +15,7 @@ const CARDS = [
     tag: 'Managed',
     tone: 'typeSecondary' as const,
     title: 'IONIC Network vehicles',
-    body: 'Professionally managed funds and SPVs that pool member capital into diversified, thesis-driven mandates.',
+    body: 'Professionally managed funds and SPVs that pool member capital into leading companies, funds, and thesis-driven mandates.',
   },
 ]
 

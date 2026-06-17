@@ -47,27 +47,25 @@ export function HowItWorks() {
         </h2>
       </Reveal>
 
-      <div className="relative mt-12">
-        {/* progress rail behind the step nodes */}
-        <div aria-hidden className="absolute bottom-7 left-7 top-7 w-px bg-border/60" />
-        <div className="space-y-4">
-          {STEPS.map((s, i) => (
-            <Reveal key={s.n} delay={i * 0.08}>
-              <div className="flex items-stretch gap-5">
-                <div className="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-full glass font-display text-sm font-medium text-primary">
+      <div className="mt-12 space-y-4">
+        {STEPS.map((s, i) => (
+          <Reveal key={s.n} delay={i * 0.08}>
+            <GlassCard className="p-5">
+              <div className="flex items-center gap-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full glass font-display text-sm font-medium text-primary">
                   {s.n}
                 </div>
-                <GlassCard className="flex-1 p-5">
+                <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="font-display text-lg font-medium">{s.title}</h3>
                     <StatusBadge kind={s.badge.kind} value={s.badge.value} />
                   </div>
                   <p className="mt-1.5 text-sm text-muted-foreground">{s.body}</p>
-                </GlassCard>
+                </div>
               </div>
-            </Reveal>
-          ))}
-        </div>
+            </GlassCard>
+          </Reveal>
+        ))}
       </div>
     </section>
   )
