@@ -38,6 +38,10 @@ export async function POST(
     typeof body?.event_date === 'string' && body.event_date.trim()
       ? body.event_date.trim()
       : null
+  const amount_raised =
+    body?.amount_raised === null || body?.amount_raised === undefined || body?.amount_raised === ''
+      ? null
+      : Number(body.amount_raised)
 
   if (!round_name) {
     return NextResponse.json({ error: 'round_name is required' }, { status: 400 })
@@ -45,6 +49,12 @@ export async function POST(
   if (!Number.isFinite(valuation) || valuation < 0) {
     return NextResponse.json(
       { error: 'valuation must be a non-negative number' },
+      { status: 400 }
+    )
+  }
+  if (amount_raised !== null && (!Number.isFinite(amount_raised) || amount_raised < 0)) {
+    return NextResponse.json(
+      { error: 'amount_raised must be a non-negative number' },
       { status: 400 }
     )
   }
@@ -65,6 +75,7 @@ export async function POST(
       listing_id: listingId,
       round_name,
       valuation,
+      amount_raised,
       event_date,
       sequence_order,
     })

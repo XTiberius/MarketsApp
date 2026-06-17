@@ -146,6 +146,7 @@ export interface FundingRound {
   listing_id: string
   round_name: string
   valuation: number
+  amount_raised: number | null
   event_date: string | null
   sequence_order: number
   created_at: string

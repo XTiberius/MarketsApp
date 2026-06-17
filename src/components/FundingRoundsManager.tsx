@@ -21,6 +21,7 @@ export function FundingRoundsManager({
   const router = useRouter()
   const [roundName, setRoundName] = useState('')
   const [valuation, setValuation] = useState('')
+  const [amountRaised, setAmountRaised] = useState('')
   const [eventDate, setEventDate] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -47,6 +48,7 @@ export function FundingRoundsManager({
         body: JSON.stringify({
           round_name: roundName.trim(),
           valuation: valuationNumber,
+          amount_raised: amountRaised || undefined,
           event_date: eventDate || undefined,
         }),
       })
@@ -57,6 +59,7 @@ export function FundingRoundsManager({
       }
       setRoundName('')
       setValuation('')
+      setAmountRaised('')
       setEventDate('')
       router.refresh()
     } catch (err) {
@@ -103,6 +106,9 @@ export function FundingRoundsManager({
                 </p>
                 <p className="truncate text-xs text-muted-foreground">
                   {formatCompactCurrency(round.valuation)}
+                  {round.amount_raised != null
+                    ? ` · ${formatCompactCurrency(round.amount_raised)} raised`
+                    : ''}
                   {round.event_date ? ` · ${formatDate(round.event_date)}` : ''}
                 </p>
               </div>
@@ -120,8 +126,8 @@ export function FundingRoundsManager({
       )}
 
       <form onSubmit={handleAdd} className="space-y-3">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="space-y-1 sm:col-span-1">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="space-y-1">
             <Label htmlFor="round_name">Round name</Label>
             <Input
               id="round_name"
@@ -131,7 +137,7 @@ export function FundingRoundsManager({
               disabled={busy}
             />
           </div>
-          <div className="space-y-1 sm:col-span-1">
+          <div className="space-y-1">
             <Label htmlFor="round_valuation">Valuation</Label>
             <Input
               id="round_valuation"
@@ -144,8 +150,21 @@ export function FundingRoundsManager({
               disabled={busy}
             />
           </div>
-          <div className="space-y-1 sm:col-span-1">
-            <Label htmlFor="round_date">Date (optional)</Label>
+          <div className="space-y-1">
+            <Label htmlFor="round_amount_raised">Amount raised</Label>
+            <Input
+              id="round_amount_raised"
+              type="number"
+              min={0}
+              step="any"
+              value={amountRaised}
+              onChange={(e) => setAmountRaised(e.target.value)}
+              placeholder="10000000"
+              disabled={busy}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="round_date">Date</Label>
             <Input
               id="round_date"
               type="date"
