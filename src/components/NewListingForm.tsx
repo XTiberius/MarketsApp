@@ -481,6 +481,7 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
               )}
               <input
                 ref={memorandumInputRef}
+                data-testid="create-doc-memorandum"
                 type="file"
                 accept="application/pdf"
                 className="hidden"
@@ -532,6 +533,7 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
               )}
               <input
                 ref={pitchDeckInputRef}
+                data-testid="create-doc-pitch_deck"
                 type="file"
                 accept="application/pdf"
                 className="hidden"

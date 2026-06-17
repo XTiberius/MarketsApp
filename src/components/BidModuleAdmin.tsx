@@ -87,9 +87,15 @@ export function BidModuleAdmin({ bid: initialBid }: { bid: AdminBid }) {
         setError(data?.error ?? 'Upload failed')
         return
       }
-      // Optimistically add the new document; refresh pulls the canonical state
-      // (including any server-side status change from the NII auto-advance).
-      setBid((b) => ({ ...b, associated_documents: [...(b.associated_documents ?? []), data] }))
+      // Optimistically add the new document and mirror the NII auto-advance
+      // (uploading the NII on a `placed` bid advances it server-side). refresh
+      // then pulls the canonical state.
+      setBid((b) => ({
+        ...b,
+        status:
+          document_type === 'nii' && b.status === 'placed' ? 'pending_acceptance' : b.status,
+        associated_documents: [...(b.associated_documents ?? []), data],
+      }))
       router.refresh()
     } finally {
       setBusy(false)
@@ -187,6 +193,7 @@ function OpenAction({
             label="Upload executed NII"
             busy={busy}
             onFile={(f) => onUpload(f, 'nii')}
+            testId="upload-nii"
           />
           <Button
             type="button"
@@ -500,11 +507,13 @@ function UploadDropzone({
   accept,
   busy,
   onFile,
+  testId,
 }: {
   label: string
   accept?: string
   busy: boolean
   onFile: (file: File) => void
+  testId?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   return (
@@ -529,6 +538,7 @@ function UploadDropzone({
       </div>
       <input
         ref={inputRef}
+        data-testid={testId}
         type="file"
         accept={accept}
         className="hidden"

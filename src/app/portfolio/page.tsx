@@ -23,7 +23,8 @@ type PortfolioBid = Bid & {
     'company_name' | 'industry' | 'ai_newsfeed_enabled'
   > & {
     funding_rounds: FundingRound[]
-    listing_newsfeed: ListingNewsfeed[]
+    // unique(listing_id) → PostgREST embeds this as a single object (or null), not an array.
+    listing_newsfeed: ListingNewsfeed | ListingNewsfeed[] | null
   }
   associated_documents: AssociatedDocument[]
 }
@@ -44,7 +45,9 @@ function PortfolioItem({ bid }: { bid: PortfolioBid }) {
   const rounds = [...(listing.funding_rounds ?? [])].sort(
     (a, b) => a.sequence_order - b.sequence_order
   )
-  const newsfeed = listing.listing_newsfeed?.[0] ?? null
+  const newsfeed = Array.isArray(listing.listing_newsfeed)
+    ? listing.listing_newsfeed[0] ?? null
+    : listing.listing_newsfeed ?? null
   const showNewsfeed =
     listing.ai_newsfeed_enabled && !!newsfeed && newsfeed.bullets.length > 0
 
