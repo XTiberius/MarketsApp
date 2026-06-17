@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { GlassCard } from '@/components/ui/glass-card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { BidDocumentList } from '@/components/BidDocumentList'
 import { FundingRoundsChart } from '@/components/FundingRoundsChart'
 import { NewsfeedSummary } from '@/components/NewsfeedSummary'
@@ -53,11 +54,16 @@ function PortfolioItem({ bid }: { bid: PortfolioBid }) {
   return (
     <GlassCard className="p-5 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h3 className="font-display text-lg font-semibold leading-tight">
-            {listing.company_name}
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">{listing.industry}</p>
+        <div className="min-w-0 space-y-2">
+          <div>
+            <h3 className="font-display text-lg font-semibold leading-tight">
+              {listing.company_name}
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">{listing.industry}</p>
+          </div>
+          {bid.invested_at && (
+            <Badge tone="success">Executed {formatDate(bid.invested_at)}</Badge>
+          )}
         </div>
         {closed ? (
           <div className="flex flex-col items-end gap-1 text-sm">
