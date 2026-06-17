@@ -18,11 +18,13 @@ import { Label } from '@/components/ui/label'
 interface Props {
   listingId: string
   companyName: string
+  minimumInvestment?: number | null
 }
 
-const MIN_BID = 50_000
+const DEFAULT_MIN_BID = 50_000
 
-export function BidModal({ listingId, companyName }: Props) {
+export function BidModal({ listingId, companyName, minimumInvestment }: Props) {
+  const minBid = minimumInvestment ?? DEFAULT_MIN_BID
   const [open, setOpen] = useState(false)
   const [amount, setAmount] = useState('')
   const [loading, setLoading] = useState(false)
@@ -36,8 +38,8 @@ export function BidModal({ listingId, companyName }: Props) {
 
     const numericAmount = Number(amount.replace(/[^0-9]/g, ''))
 
-    if (numericAmount < MIN_BID) {
-      setError(`Minimum bid is ${formatCurrency(MIN_BID)}`)
+    if (numericAmount < minBid) {
+      setError(`Minimum bid is ${formatCurrency(minBid)}`)
       setLoading(false)
       return
     }
@@ -99,7 +101,7 @@ export function BidModal({ listingId, companyName }: Props) {
             <DialogHeader>
               <DialogTitle>Place a Bid</DialogTitle>
               <DialogDescription>
-                {companyName} · Min. {formatCurrency(MIN_BID)}
+                {companyName} · Min. {formatCurrency(minBid)}
               </DialogDescription>
             </DialogHeader>
 
@@ -113,7 +115,7 @@ export function BidModal({ listingId, companyName }: Props) {
                   required
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="$50,000"
+                  placeholder={formatCurrency(minBid)}
                   className="font-mono"
                 />
               </div>

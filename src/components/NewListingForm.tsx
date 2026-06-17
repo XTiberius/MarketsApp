@@ -26,6 +26,7 @@ type FormState = {
   logo_url: string
   valuation: string
   amount_raised: string
+  minimum_investment: string
   investment_structure: string
 }
 
@@ -54,6 +55,7 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
           logo_url: listing.logo_url ?? '',
           valuation: listing.valuation?.toString() ?? '',
           amount_raised: listing.amount_raised?.toString() ?? '',
+          minimum_investment: listing.minimum_investment?.toString() ?? '',
           investment_structure: listing.investment_structure ?? '',
         }
       : {
@@ -66,6 +68,7 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
           logo_url: '',
           valuation: '',
           amount_raised: '',
+          minimum_investment: '',
           investment_structure: '',
         }
   )
@@ -82,7 +85,7 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
     for (const field of REQUIRED_FIELDS) {
       if (!form[field].trim()) nextErrors[field] = 'This field is required'
     }
-    for (const field of ['valuation', 'amount_raised'] as const) {
+    for (const field of ['valuation', 'amount_raised', 'minimum_investment'] as const) {
       const v = form[field].trim()
       if (v && (!Number.isFinite(Number(v)) || Number(v) < 0)) {
         nextErrors[field] = 'Enter a non-negative number'
@@ -105,6 +108,8 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
         logo_url: form.logo_url.trim() || null,
         valuation: form.valuation === '' ? null : Number(form.valuation),
         amount_raised: form.amount_raised === '' ? null : Number(form.amount_raised),
+        minimum_investment:
+          form.minimum_investment === '' ? null : Number(form.minimum_investment),
         investment_structure: form.investment_structure.trim() || null,
       }),
     })
@@ -263,6 +268,21 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
             />
             {errors.amount_raised && (
               <p className="mt-1 text-xs text-danger">{errors.amount_raised}</p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor="minimum_investment" className="mb-1 block">
+              Minimum investment ($)
+            </Label>
+            <Input
+              id="minimum_investment"
+              type="number"
+              min="0"
+              value={form.minimum_investment}
+              onChange={(e) => update('minimum_investment', e.target.value)}
+            />
+            {errors.minimum_investment && (
+              <p className="mt-1 text-xs text-danger">{errors.minimum_investment}</p>
             )}
           </div>
         </div>

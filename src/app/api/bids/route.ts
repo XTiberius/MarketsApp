@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 
-const MIN_BID = 50_000
+const DEFAULT_MIN_BID = 50_000
 
 export async function GET() {
   const supabase = await createServerSupabaseClient()
@@ -31,8 +31,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'listing_id and amount are required' }, { status: 400 })
   }
 
-  if (amount < MIN_BID) {
-    return NextResponse.json({ error: `Minimum bid is $${MIN_BID.toLocaleString()}` }, { status: 400 })
+  const { data: listing, error: listingError } = await supabase
+    .from('listings')
+    .select('minimum_investment')
+    .eq('id', listing_id)
+    .single()
+
+  if (listingError || !listing) {
+    return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
+  }
+
+  const minBid = listing.minimum_investment ?? DEFAULT_MIN_BID
+  if (amount < minBid) {
+    return NextResponse.json(
+      { error: `Minimum bid is $${minBid.toLocaleString()}` },
+      { status: 400 }
+    )
   }
 
   const { data, error } = await supabase

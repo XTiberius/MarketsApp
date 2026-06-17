@@ -87,9 +87,14 @@ export async function PATCH(
     body.valuation == null || body.valuation === '' ? null : Number(body.valuation)
   const amount_raised =
     body.amount_raised == null || body.amount_raised === '' ? null : Number(body.amount_raised)
+  const minimum_investment =
+    body.minimum_investment == null || body.minimum_investment === ''
+      ? null
+      : Number(body.minimum_investment)
   for (const [label, n] of [
     ['valuation', valuation],
     ['amount_raised', amount_raised],
+    ['minimum_investment', minimum_investment],
   ] as const) {
     if (n !== null && (!Number.isFinite(n) || n < 0)) {
       return NextResponse.json(
@@ -111,6 +116,7 @@ export async function PATCH(
       logo_url,
       valuation,
       amount_raised,
+      minimum_investment,
       investment_structure:
         typeof body.investment_structure === 'string' && body.investment_structure.trim()
           ? body.investment_structure.trim()
