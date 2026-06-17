@@ -53,9 +53,14 @@ export async function Navbar() {
               </div>
             </>
           ) : (
-            <Button asChild size="sm" className="hidden md:inline-flex">
-              <Link href="/auth/login">Sign In</Link>
-            </Button>
+            <>
+              <Button asChild variant="ghost" size="sm" className="hidden md:inline-flex">
+                <Link href="/auth/login">Sign in</Link>
+              </Button>
+              <Button asChild size="sm" className="hidden md:inline-flex">
+                <Link href="/auth/login">Get started</Link>
+              </Button>
+            </>
           )}
           <MobileMenu isSignedIn={!!user} isAdmin={isAdmin} />
         </div>

@@ -1,110 +1,111 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   IONIC — Liquid Glass / Purple Space design tokens
-   Colors are stored as HSL *channels* (e.g. "263 80% 65%") so components can
-   apply precise alpha with hsl(var(--token) / <a>). Light = :root, dark = .dark
-   (next-themes class strategy; dark is the default theme).
+   IONIC — Chrome / Liquid Glass design tokens
+   Neutral, light-reactive "Apple liquid glass": cool silver-grey surfaces, a
+   metallic glass sheen, and only a faint cool accent. Colors are HSL *channels*
+   (e.g. "224 42% 66%") so components apply alpha with hsl(var(--token) / <a>).
+   Light = :root, dark = .dark (next-themes; dark is the default theme).
    ========================================================================== */
 
 :root {
-  /* core surfaces — light ("dawn lavender") */
-  --background: 264 50% 98%;
-  --foreground: 258 38% 13%;
+  /* core surfaces — light ("brushed silver") */
+  --background: 220 16% 98%;
+  --foreground: 220 18% 14%;
   --card: 0 0% 100%;
-  --card-foreground: 258 38% 13%;
+  --card-foreground: 220 18% 14%;
   --popover: 0 0% 100%;
-  --popover-foreground: 258 38% 13%;
-  --muted: 264 30% 94%;
-  --muted-foreground: 258 14% 40%;
-  --primary: 263 70% 53%;
+  --popover-foreground: 220 18% 14%;
+  --muted: 220 16% 94%;
+  --muted-foreground: 220 10% 42%;
+  --primary: 224 45% 52%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 264 30% 92%;
-  --secondary-foreground: 258 38% 18%;
-  --accent: 290 70% 52%;
+  --secondary: 220 16% 92%;
+  --secondary-foreground: 220 18% 20%;
+  --accent: 224 40% 56%;
   --accent-foreground: 0 0% 100%;
   --destructive: 350 75% 48%;
   --destructive-foreground: 0 0% 100%;
-  --border: 264 28% 87%;
-  --input: 264 28% 89%;
-  --ring: 263 70% 58%;
+  --border: 220 14% 86%;
+  --input: 220 14% 88%;
+  --ring: 224 45% 58%;
 
   /* color-coded status palette (legible on light glass) */
-  --type-primary: 263 70% 50%;   /* listing primary  → violet */
-  --type-secondary: 190 85% 36%; /* listing secondary→ cyan   */
-  --success: 152 65% 34%;        /* published / approved / invested */
-  --warning: 36 92% 40%;         /* pending / awaiting_payment */
-  --danger: 350 75% 48%;         /* closed / rejected */
-  --info: 217 80% 48%;           /* accepted */
-  --neutral: 250 10% 42%;        /* draft / placed / default */
+  --type-primary: 224 45% 52%;   /* listing primary  → cool accent */
+  --type-secondary: 190 70% 38%; /* listing secondary→ cyan        */
+  --success: 152 55% 34%;        /* published / approved / invested */
+  --warning: 36 80% 42%;         /* pending / awaiting_payment */
+  --danger: 350 70% 48%;         /* closed / rejected */
+  --info: 217 65% 48%;           /* accepted */
+  --neutral: 220 8% 44%;         /* draft / placed / default */
 
   /* glass + atmosphere — light */
-  --glass-bg: 264 60% 100%;
+  --glass-bg: 220 30% 100%;
   --glass-bg-alpha: 0.62;
-  --glass-border: 263 50% 50%;
-  --glass-border-alpha: 0.16;
+  --glass-border: 220 14% 60%;
+  --glass-border-alpha: 0.12;
   --glass-highlight: 0 0% 100%;
-  --glass-shadow: 0 8px 40px -10px hsl(263 50% 55% / 0.28);
+  --glass-shadow: 0 8px 40px -10px hsl(220 20% 50% / 0.22);
   --blur: 16px;
 
-  --space-1: 266 60% 96%;
-  --space-3: 230 55% 97%;
-  --star: 263 40% 50%;
+  --space-1: 220 30% 97%;
+  --space-3: 220 30% 97%;
+  --star: 220 12% 55%;
   --star-alpha: 0.14;
 
-  /* chromatic-glass edge intensity (refined; light theme subtler) */
-  --chroma-alpha: 0.38;
+  /* chromatic-glass edge intensity (subtle metallic) */
+  --chroma-alpha: 0.07;
 
   --radius: 0.85rem;
 }
 
 .dark {
-  /* core surfaces — dark ("deep space") */
-  --background: 258 44% 6%;
-  --foreground: 250 30% 96%;
-  --card: 258 40% 10%;
-  --card-foreground: 250 30% 96%;
-  --popover: 258 42% 9%;
-  --popover-foreground: 250 30% 96%;
-  --muted: 257 25% 16%;
-  --muted-foreground: 250 16% 66%;
-  --primary: 263 82% 67%;
-  --primary-foreground: 258 60% 8%;
-  --secondary: 257 28% 18%;
-  --secondary-foreground: 250 30% 92%;
-  --accent: 290 85% 68%;
-  --accent-foreground: 258 60% 8%;
+  /* core surfaces — dark ("graphite") */
+  --background: 220 20% 7%;
+  --foreground: 220 14% 96%;
+  --card: 220 16% 11%;
+  --card-foreground: 220 14% 96%;
+  --popover: 220 18% 10%;
+  --popover-foreground: 220 14% 96%;
+  --muted: 220 12% 17%;
+  --muted-foreground: 220 10% 66%;
+  --primary: 224 42% 66%;
+  --primary-foreground: 220 30% 10%;
+  --secondary: 220 12% 19%;
+  --secondary-foreground: 220 14% 92%;
+  --accent: 224 40% 70%;
+  --accent-foreground: 220 30% 10%;
   --destructive: 350 82% 62%;
   --destructive-foreground: 0 0% 100%;
-  --border: 257 30% 22%;
-  --input: 257 30% 20%;
-  --ring: 263 85% 72%;
+  --border: 220 14% 22%;
+  --input: 220 14% 20%;
+  --ring: 224 45% 70%;
 
   /* color-coded status palette (vibrant on dark glass) */
-  --type-primary: 263 85% 74%;
-  --type-secondary: 190 90% 62%;
-  --success: 152 70% 56%;
-  --warning: 40 95% 64%;
-  --danger: 350 90% 70%;
-  --info: 217 90% 68%;
-  --neutral: 250 14% 64%;
+  --type-primary: 224 45% 72%;
+  --type-secondary: 190 75% 60%;
+  --success: 152 60% 56%;
+  --warning: 40 85% 64%;
+  --danger: 350 85% 70%;
+  --info: 217 80% 68%;
+  --neutral: 220 10% 64%;
 
   /* glass + atmosphere — dark */
-  --glass-bg: 258 50% 14%;
+  --glass-bg: 220 18% 15%;
   --glass-bg-alpha: 0.5;
-  --glass-border: 263 60% 78%;
-  --glass-border-alpha: 0.16;
+  --glass-border: 220 16% 80%;
+  --glass-border-alpha: 0.10;
   --glass-highlight: 0 0% 100%;
-  --glass-shadow: 0 10px 50px -12px hsl(263 80% 25% / 0.65);
+  --glass-shadow: 0 10px 50px -12px hsl(220 25% 6% / 0.65);
   --blur: 16px;
 
-  --space-1: 264 45% 12%;
-  --space-3: 230 50% 8%;
+  --space-1: 220 22% 12%;
+  --space-3: 220 25% 8%;
   --star: 0 0% 100%;
-  --star-alpha: 0.55;
+  --star-alpha: 0.5;
 
-  /* chromatic-glass edge intensity (refined; vibrant on dark) */
-  --chroma-alpha: 0.5;
+  /* chromatic-glass edge intensity (subtle metallic) */
+  --chroma-alpha: 0.09;
 }
 
 /* ---- wire tokens to Tailwind v4 utilities ---- */
@@ -159,6 +160,29 @@
   0%, 100% { opacity: 0.35; }
   50%      { opacity: 1; }
 }
+/* (no shine sweep — Apple-style glass) */
+/* Hero wordmark settle-in: resting state is VISIBLE; @starting-style provides
+   the entry state and the transition animates between them on first paint.
+   Robust — if the transition never runs, the text shows its visible resting state. */
+.ionic-settle {
+  opacity: 1;
+  filter: blur(0);
+  letter-spacing: 0;
+  transform: translateY(0);
+  transition:
+    opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+    letter-spacing 1.2s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@starting-style {
+  .ionic-settle {
+    opacity: 0;
+    filter: blur(14px);
+    letter-spacing: 0.32em;
+    transform: translateY(6px);
+  }
+}
 @keyframes accordion-down {
   from { height: 0; }
   to   { height: var(--radix-accordion-content-height); }
@@ -175,16 +199,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ---- reusable liquid-glass surface (refined chromatic) ---- */
+/* ---- reusable liquid-glass surface (chrome / metallic) ---- */
 @utility glass {
   position: relative;
   background-color: hsl(var(--glass-bg) / var(--glass-bg-alpha));
-  backdrop-filter: blur(var(--blur)) saturate(150%);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(150%);
+  backdrop-filter: blur(var(--blur)) saturate(180%) brightness(1.05);
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(180%) brightness(1.05);
   border: 1px solid hsl(var(--glass-border) / var(--glass-border-alpha));
-  box-shadow: var(--glass-shadow), inset 0 1px 0 0 hsl(var(--glass-highlight) / 0.18);
+  box-shadow:
+    var(--glass-shadow),
+    inset 0 1px 0 0 hsl(var(--glass-highlight) / 0.30),
+    inset 0 -1px 1px 0 hsl(220 30% 4% / 0.22);
 
-  /* thin iridescent edge — gradient ring masked to the 1px border only */
+  /* thin metallic edge — white → cool-grey → white, masked to the 1px border */
   &::before {
     content: "";
     position: absolute;
@@ -193,9 +220,9 @@ body {
     padding: 1px;
     background: linear-gradient(
       135deg,
-      hsl(var(--type-primary) / var(--chroma-alpha)) 0%,
-      hsl(var(--type-secondary) / var(--chroma-alpha)) 50%,
-      hsl(var(--accent) / var(--chroma-alpha)) 100%
+      hsl(var(--glass-highlight) / var(--chroma-alpha)) 0%,
+      hsl(var(--glass-border) / calc(var(--chroma-alpha) * 0.5)) 50%,
+      hsl(var(--glass-highlight) / var(--chroma-alpha)) 100%
     );
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
@@ -204,6 +231,30 @@ body {
     mask-composite: exclude;
     pointer-events: none;
     transition: opacity 0.3s ease;
+  }
+
+  /* pointer-reactive specular highlight (Apple liquid glass — follows cursor) */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at var(--gx, 50%) var(--gy, 0%),
+      hsl(var(--glass-highlight) / 0.18) 0%,
+      transparent 45%
+    );
+    pointer-events: none;
+    transition: background 0.25s ease;
+  }
+}
+
+/* Apple-style refraction — warp the backdrop behind glass (Chromium). The base
+   blur/saturate from the utility stays for browsers without url() backdrop filters. */
+@supports ((backdrop-filter: url("#g")) or (-webkit-backdrop-filter: url("#g"))) {
+  .glass {
+    -webkit-backdrop-filter: url(#glass-distortion) blur(7px) saturate(180%) brightness(1.08);
+    backdrop-filter: url(#glass-distortion) blur(7px) saturate(180%) brightness(1.08);
   }
 }
 
