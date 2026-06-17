@@ -1,6 +1,7 @@
 import { requireAdmin } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { AdminBidManagement } from '@/components/AdminBidManagement'
+import type { AdminBid } from '@/components/BidModuleAdmin'
 import { GlassCard } from '@/components/ui/glass-card'
 
 export default async function AdminBidsPage() {
@@ -9,7 +10,7 @@ export default async function AdminBidsPage() {
 
   const { data: bids } = await supabase
     .from('bids')
-    .select('*, listings(company_name), users(email)')
+    .select('*, listings(company_name), users(email), associated_documents(*)')
     .order('created_at', { ascending: false })
 
   return (
@@ -17,7 +18,7 @@ export default async function AdminBidsPage() {
       <GlassCard className="mb-6 p-6">
         <h1 className="font-display text-3xl font-bold text-foreground">Bid Management</h1>
       </GlassCard>
-      <AdminBidManagement bids={bids ?? []} />
+      <AdminBidManagement bids={(bids ?? []) as unknown as AdminBid[]} />
     </div>
   )
 }
