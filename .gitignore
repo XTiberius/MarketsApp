@@ -85,3 +85,6 @@ ds-bundle/
 .design-sync/learnings/
 .design-sync/node_modules
 .design-sync/compiled.css
+
+# e2e large-file fixtures (not committed)
+tests/.tmp

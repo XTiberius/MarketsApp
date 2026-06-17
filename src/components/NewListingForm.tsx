@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Plus, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,7 +15,16 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { LogoUploadField } from '@/components/LogoUploadField'
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/storage'
+import { formatCompactCurrency, formatDate } from '@/lib/utils'
 import type { Listing, ListingType, ListingStatus } from '@/lib/types'
+
+type PendingRound = {
+  round_name: string
+  valuation: string
+  amount_raised: string
+  event_date: string
+}
 
 type FormState = {
   company_name: string
@@ -81,8 +91,65 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
         }
   )
 
+  const memorandumInputRef = useRef<HTMLInputElement>(null)
+  const pitchDeckInputRef = useRef<HTMLInputElement>(null)
+  const [memorandumFile, setMemorandumFile] = useState<File | null>(null)
+  const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null)
+  const [memorandumError, setMemorandumError] = useState<string | null>(null)
+  const [pitchDeckError, setPitchDeckError] = useState<string | null>(null)
+
+  const [pendingRounds, setPendingRounds] = useState<PendingRound[]>([])
+  const [roundName, setRoundName] = useState('')
+  const [roundValuation, setRoundValuation] = useState('')
+  const [roundAmountRaised, setRoundAmountRaised] = useState('')
+  const [roundDate, setRoundDate] = useState('')
+  const [roundError, setRoundError] = useState<string | null>(null)
+
   function update<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  function pickDocument(
+    file: File,
+    setFile: (f: File | null) => void,
+    setError: (e: string | null) => void
+  ) {
+    setError(null)
+    if (file.type !== 'application/pdf') {
+      setError('Please choose a PDF file.')
+      return
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError(`File exceeds the ${MAX_UPLOAD_LABEL} limit.`)
+      return
+    }
+    setFile(file)
+  }
+
+  function handleAddRound() {
+    setRoundError(null)
+    const valuationNumber = Number(roundValuation)
+    if (!roundName.trim()) {
+      setRoundError('Round name is required.')
+      return
+    }
+    if (!Number.isFinite(valuationNumber) || valuationNumber < 0) {
+      setRoundError('Enter a valid valuation.')
+      return
+    }
+    setPendingRounds((prev) => [
+      ...prev,
+      {
+        round_name: roundName.trim(),
+        valuation: roundValuation,
+        amount_raised: roundAmountRaised,
+        event_date: roundDate,
+      },
+    ])
+    setRoundName('')
+    setRoundValuation('')
+    setRoundAmountRaised('')
+    setRoundDate('')
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -132,7 +199,44 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
       return
     }
 
-    router.push('/admin/listings')
+    if (isEdit) {
+      router.push('/admin/listings')
+      router.refresh()
+      return
+    }
+
+    // Create mode: attach the buffered documents and rounds to the new listing.
+    // The listing already exists, so we always move forward to its edit page —
+    // sub-request failures are recoverable there via the live managers.
+    const newId = result.id as string
+    const docSlots: { file: File | null; doc_type: 'memorandum' | 'pitch_deck' }[] = [
+      { file: memorandumFile, doc_type: 'memorandum' },
+      { file: pitchDeckFile, doc_type: 'pitch_deck' },
+    ]
+    for (const slot of docSlots) {
+      if (!slot.file) continue
+      const body = new FormData()
+      body.append('file', slot.file)
+      body.append('doc_type', slot.doc_type)
+      await fetch(`/api/listings/${newId}/documents`, {
+        method: 'POST',
+        body,
+      }).catch(() => null)
+    }
+    for (const round of pendingRounds) {
+      await fetch(`/api/listings/${newId}/rounds`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          round_name: round.round_name,
+          valuation: Number(round.valuation),
+          amount_raised: round.amount_raised || undefined,
+          event_date: round.event_date || undefined,
+        }),
+      }).catch(() => null)
+    }
+
+    router.push(`/admin/listings/${newId}`)
     router.refresh()
   }
 
@@ -329,6 +433,218 @@ export function NewListingForm({ listing }: { listing?: Listing }) {
           />
         </div>
       </div>
+
+      {!isEdit && (
+        <div className="border-t border-border pt-5 space-y-5">
+          <div>
+            <h2 className="text-sm font-semibold">Informational documents</h2>
+            <p className="text-xs text-muted-foreground">
+              Optional. Attached to the listing when it is created.
+            </p>
+          </div>
+
+          <div className="space-y-5">
+            <div>
+              <Label className="mb-1 block">Investment Memorandum</Label>
+              {memorandumFile ? (
+                <div className="glass flex items-center justify-between gap-3 rounded-xl p-3">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {memorandumFile.name}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMemorandumFile(null)
+                      setMemorandumError(null)
+                    }}
+                    className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" /> Remove
+                  </button>
+                </div>
+              ) : (
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => memorandumInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      memorandumInputRef.current?.click()
+                    }
+                  }}
+                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <span className="text-muted-foreground">Click to upload a PDF</span>
+                  <span className="text-xs text-muted-foreground">PDF only</span>
+                </div>
+              )}
+              <input
+                ref={memorandumInputRef}
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) pickDocument(f, setMemorandumFile, setMemorandumError)
+                  e.target.value = ''
+                }}
+              />
+              {memorandumError && (
+                <p className="mt-1 text-xs text-danger">{memorandumError}</p>
+              )}
+            </div>
+
+            <div>
+              <Label className="mb-1 block">Pitch Deck</Label>
+              {pitchDeckFile ? (
+                <div className="glass flex items-center justify-between gap-3 rounded-xl p-3">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {pitchDeckFile.name}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPitchDeckFile(null)
+                      setPitchDeckError(null)
+                    }}
+                    className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" /> Remove
+                  </button>
+                </div>
+              ) : (
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => pitchDeckInputRef.current?.click()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      pitchDeckInputRef.current?.click()
+                    }
+                  }}
+                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm transition-colors hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <span className="text-muted-foreground">Click to upload a PDF</span>
+                  <span className="text-xs text-muted-foreground">PDF only</span>
+                </div>
+              )}
+              <input
+                ref={pitchDeckInputRef}
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) pickDocument(f, setPitchDeckFile, setPitchDeckError)
+                  e.target.value = ''
+                }}
+              />
+              {pitchDeckError && (
+                <p className="mt-1 text-xs text-danger">{pitchDeckError}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!isEdit && (
+        <div className="border-t border-border pt-5 space-y-5">
+          <div>
+            <h2 className="text-sm font-semibold">Fundraising rounds</h2>
+            <p className="text-xs text-muted-foreground">
+              Optional. Saved to the listing when it is created.
+            </p>
+          </div>
+
+          {pendingRounds.length > 0 && (
+            <ul className="space-y-2">
+              {pendingRounds.map((round, index) => (
+                <li
+                  key={index}
+                  className="glass flex items-center justify-between gap-3 rounded-xl p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">
+                      {round.round_name}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {formatCompactCurrency(Number(round.valuation))}
+                      {round.amount_raised
+                        ? ` · ${formatCompactCurrency(Number(round.amount_raised))} raised`
+                        : ''}
+                      {round.event_date ? ` · ${formatDate(round.event_date)}` : ''}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPendingRounds((prev) => prev.filter((_, i) => i !== index))
+                    }
+                    className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <X className="h-3 w-3" /> Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-1">
+                <Label htmlFor="round_name">Round name</Label>
+                <Input
+                  id="round_name"
+                  value={roundName}
+                  onChange={(e) => setRoundName(e.target.value)}
+                  placeholder="Series A"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="round_valuation">Valuation</Label>
+                <Input
+                  id="round_valuation"
+                  type="number"
+                  min={0}
+                  step="any"
+                  value={roundValuation}
+                  onChange={(e) => setRoundValuation(e.target.value)}
+                  placeholder="50000000"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="round_amount_raised">Amount raised</Label>
+                <Input
+                  id="round_amount_raised"
+                  type="number"
+                  min={0}
+                  step="any"
+                  value={roundAmountRaised}
+                  onChange={(e) => setRoundAmountRaised(e.target.value)}
+                  placeholder="10000000"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="round_date">Date</Label>
+                <Input
+                  id="round_date"
+                  type="date"
+                  value={roundDate}
+                  onChange={(e) => setRoundDate(e.target.value)}
+                />
+              </div>
+            </div>
+            <Button type="button" variant="glass" size="sm" onClick={handleAddRound}>
+              <Plus className="h-4 w-4" />
+              Add round
+            </Button>
+          </div>
+
+          {roundError && <p className="text-xs text-danger">{roundError}</p>}
+        </div>
+      )}
 
       {apiError && <p className="text-sm text-danger">{apiError}</p>}
 
