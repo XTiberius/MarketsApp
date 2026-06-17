@@ -17,8 +17,10 @@ interface Props {
 }
 
 const TRANSITIONS: Record<BidStatus, BidStatus[]> = {
-  placed: ['accepted', 'rejected'],
-  accepted: ['awaiting_payment'],
+  placed: ['pending_acceptance', 'rejected'],
+  pending_acceptance: ['accepted', 'rejected'],
+  accepted: ['documents_executed'],
+  documents_executed: ['awaiting_payment'],
   awaiting_payment: ['invested'],
   invested: [],
   rejected: [],
@@ -41,6 +43,11 @@ export function AdminBidManagement({ bids: initialBids }: Props) {
       setBids((prev) =>
         prev.map((b) => (b.id === bidId ? { ...b, status } : b))
       )
+    } else {
+      const { error } = await res.json().catch(() => ({ error: 'Update failed' }))
+      // Gated transitions (e.g. requires an uploaded NII / payment note) surface here.
+      // The full per-bid workflow UI lands in the per-bid documents slice.
+      alert(error || 'Update failed')
     }
 
     setUpdating(null)

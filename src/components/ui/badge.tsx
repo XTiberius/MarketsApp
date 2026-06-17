@@ -47,7 +47,9 @@ const LISTING_STATUS: Record<string, { tone: Tone; label: string }> = {
 }
 const BID_STATUS: Record<string, { tone: Tone; label: string }> = {
   placed: { tone: 'neutral', label: 'Placed' },
+  pending_acceptance: { tone: 'info', label: 'Pending Acceptance' },
   accepted: { tone: 'info', label: 'Accepted' },
+  documents_executed: { tone: 'info', label: 'Investment Documents Executed' },
   awaiting_payment: { tone: 'warning', label: 'Awaiting Payment' },
   invested: { tone: 'success', label: 'Invested' },
   rejected: { tone: 'danger', label: 'Rejected' },

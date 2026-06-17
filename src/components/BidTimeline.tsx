@@ -26,7 +26,9 @@ type Step = {
 
 const STEPS: Step[] = [
   { status: 'placed', label: 'Placed', color: 'neutral' },
+  { status: 'pending_acceptance', label: 'Pending Acceptance', color: 'info' },
   { status: 'accepted', label: 'Accepted', color: 'info' },
+  { status: 'documents_executed', label: 'Docs Executed', color: 'info' },
   { status: 'awaiting_payment', label: 'Awaiting Payment', color: 'warning' },
   { status: 'invested', label: 'Invested', color: 'success' },
 ]
