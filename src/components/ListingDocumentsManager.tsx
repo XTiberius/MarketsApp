@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { UploadCloud, FileText, X } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/storage'
 import type { ListingDocument, ListingDocType } from '@/lib/types'
 
 const SLOTS: { type: Exclude<ListingDocType, 'other'>; label: string }[] = [
@@ -60,6 +61,10 @@ function DocumentSlot({
     setError(null)
     if (file.type !== 'application/pdf') {
       setError('Please choose a PDF file.')
+      return
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError(`File exceeds the ${MAX_UPLOAD_LABEL} limit.`)
       return
     }
     setBusy(true)

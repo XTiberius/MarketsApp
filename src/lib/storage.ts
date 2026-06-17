@@ -7,6 +7,11 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  * `createSignedUrl` only succeeds for a caller permitted to read the object.
  */
 
+/** Max upload size, mirrored by the `documents`/`listing-docs` bucket file_size_limit
+ *  (migration 015). Enforced client- and server-side for a friendly error. */
+export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+export const MAX_UPLOAD_LABEL = '50 MB'
+
 /** Upload a file to a private bucket; returns the stored path. */
 export async function uploadPrivate(
   supabase: SupabaseClient,

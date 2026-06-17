@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { uploadPrivate } from '@/lib/storage'
+import { uploadPrivate, MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/storage'
 import type { ListingDocType } from '@/lib/types'
 
 const DOC_TYPES: ListingDocType[] = ['memorandum', 'pitch_deck', 'other']
@@ -54,6 +54,12 @@ export async function POST(
   }
   if (file.type !== 'application/pdf') {
     return NextResponse.json({ error: 'File must be a PDF' }, { status: 400 })
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return NextResponse.json(
+      { error: `File exceeds the ${MAX_UPLOAD_LABEL} limit` },
+      { status: 413 }
+    )
   }
 
   const storagePath = `${listingId}/${Date.now()}.pdf`

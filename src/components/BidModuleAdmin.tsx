@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { StatusBadge } from '@/components/ui/badge'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/storage'
 import type { AssociatedDocument, Bid, BidStatus, DocumentType } from '@/lib/types'
 
 export type AdminBid = Bid & {
@@ -70,6 +71,10 @@ export function BidModuleAdmin({ bid: initialBid }: { bid: AdminBid }) {
   /** Upload a document; the NII upload auto-advances the bid server-side. */
   async function upload(file: File, document_type: DocumentType) {
     setError(null)
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError(`File exceeds the ${MAX_UPLOAD_LABEL} limit.`)
+      return
+    }
     setBusy(true)
     try {
       const body = new FormData()

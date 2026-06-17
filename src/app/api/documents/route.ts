@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { uploadPrivate } from '@/lib/storage'
+import { uploadPrivate, MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/storage'
 import { notifyBidEvent } from '@/lib/email'
 import type { DocumentType } from '@/lib/types'
 
@@ -76,6 +76,12 @@ export async function POST(req: NextRequest) {
   }
   if (!VALID_TYPES.includes(document_type)) {
     return NextResponse.json({ error: 'Invalid document_type' }, { status: 400 })
+  }
+  if (file.size > MAX_UPLOAD_BYTES) {
+    return NextResponse.json(
+      { error: `File exceeds the ${MAX_UPLOAD_LABEL} limit` },
+      { status: 413 }
+    )
   }
 
   const { data: bid } = await supabase
