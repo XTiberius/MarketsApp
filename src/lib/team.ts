@@ -4,6 +4,8 @@ export type TeamMember = {
   title: string
   /** Blank for now — fill in when ready. */
   bio: string
+  /** Optional profile image served from /public (e.g. /team/<slug>.jpg). */
+  photo?: string
 }
 
 // Public team roster. Add the remaining members below when ready — the Team page
@@ -15,6 +17,7 @@ export const TEAM: TeamMember[] = [
     name: 'David Monroe Rashid',
     title: 'Founder & Chairman',
     bio: '',
+    photo: '/team/david-monroe-rashid.jpg',
   },
   // { slug: 'ceo', name: 'XYZ', title: 'CEO', bio: '' },
   // { slug: 'coo', name: 'XYZ', title: 'COO', bio: '' },
