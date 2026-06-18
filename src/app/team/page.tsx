@@ -28,7 +28,11 @@ export default function TeamPage() {
                 {member.title}
               </p>
               {member.bio && (
-                <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{member.bio}</p>
+                <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+                  {member.bio.split(/\n{2,}/).map((para, i) => (
+                    <p key={i}>{para}</p>
+                  ))}
+                </div>
               )}
             </div>
           </article>

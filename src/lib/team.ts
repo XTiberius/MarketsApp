@@ -16,7 +16,11 @@ export const TEAM: TeamMember[] = [
     slug: 'david-monroe-rashid',
     name: 'David Monroe Rashid',
     title: 'Founder & Chairman',
-    bio: '',
+    bio: `David is the Founder and CEO of Monroe Enterprise, a technology-focused holdings company, and a founding principal of Aura Venture Partners alongside Mustafa Samhoun, where he serves as CIO overseeing investments across crypto, defense, and AI infrastructure.
+
+He also founded The Zero Knowledge Company, which develops financial applications powered by zero-knowledge proofs and is debuting a tokenized options platform. At Ionic, David guides direction on growth, fundraising, and venture procurement.
+
+Before Ionic, David studied Computer Science at the University of Michigan before leaving to found Concord Systems, a profitable cryptocurrency trading & OTC desk that later evolved into an on-chain custody solutions developer.`,
     photo: '/team/david-monroe-rashid.jpg',
   },
   // { slug: 'ceo', name: 'XYZ', title: 'CEO', bio: '' },
