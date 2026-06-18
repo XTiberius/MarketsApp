@@ -237,6 +237,9 @@ test('portfolio shows the invested position with documents, chart, newsfeed, and
   await expect(page.getByRole('heading', { name: 'Active' })).toBeVisible()
   await expect(page.getByText(LISTING_NAME)).toBeVisible()
   await expect(page.getByText(/^Executed /)).toBeVisible() // invested-date badge
+
+  // Details (documents, chart, newsfeed) are collapsed by default — expand them.
+  await page.getByRole('button', { name: new RegExp(LISTING_NAME) }).click()
   await expect(page.getByText('investment-agreement.pdf')).toBeVisible() // bid documents
   await expect(page.getByText('Series A')).toBeVisible() // funding chart point label
   await expect(page.getByText('AI Newsfeed Summary')).toBeVisible() // newsfeed module
