@@ -271,3 +271,25 @@ test('newsfeed refresh returns 503 when AI is not configured', async ({ page }) 
   const res = await page.request.post(`/api/listings/${listingId}/newsfeed`)
   expect([503, 200]).toContain(res.status()) // 503 when no key (expected here); 200 if a key is configured
 })
+
+// Active/Closed: admin can close a listing, which stops new bids.
+test('closes a listing via the toggle and blocks new bids', async ({ page }) => {
+  const supabase = adminClient()
+  const { listingId } = await fixtureIds(supabase)
+  await supabase.from('listings').update({ status: 'published' }).eq('id', listingId)
+
+  await page.goto('/admin/listings')
+  const toggle = page.getByTestId(`listing-activity-toggle-${listingId}`)
+  await expect(toggle).toHaveText('Close')
+  await toggle.click()
+  await expect(toggle).toHaveText('Reopen')
+
+  // A closed listing rejects new bids at the API.
+  const res = await page.request.post('/api/bids', {
+    data: { listing_id: listingId, amount: 100000 },
+  })
+  expect(res.status()).toBe(400)
+  expect(((await res.json())?.error ?? '')).toMatch(/closed/i)
+
+  await supabase.from('listings').update({ status: 'published' }).eq('id', listingId)
+})

@@ -6,6 +6,7 @@ import { GlassCard } from '@/components/ui/glass-card'
 import { StatusBadge } from '@/components/ui/badge'
 import { formatDate } from '@/lib/utils'
 import { DeleteListingButton } from '@/components/DeleteListingButton'
+import { ListingActivityToggle } from '@/components/ListingActivityToggle'
 import type { Listing } from '@/lib/types'
 
 export default async function AdminListingsPage() {
@@ -45,7 +46,7 @@ export default async function AdminListingsPage() {
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <StatusBadge kind="listingStatus" value={listing.status} />
+                <ListingActivityToggle listingId={listing.id} status={listing.status} />
                 <Button asChild variant="outline" size="sm">
                   <Link href={`/admin/listings/${listing.id}`} data-testid={`admin-listing-edit-${listing.id}`}>
                     Edit

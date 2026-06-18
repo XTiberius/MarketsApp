@@ -38,10 +38,12 @@ export default async function ListingDetailPage({ params }: Props) {
     .from('listings')
     .select('*')
     .eq('id', id)
-    .eq('status', 'published')
+    .in('status', ['published', 'closed'])
     .single()
 
   if (!listing) notFound()
+
+  const isClosed = listing.status === 'closed'
 
   // Check if the investor has signed the NDA for this listing
   const { data: nda } = await supabase
@@ -110,6 +112,7 @@ export default async function ListingDetailPage({ params }: Props) {
               {listing.company_name}
             </h1>
             <div className="flex flex-wrap items-center gap-2">
+              <StatusBadge kind="listingActivity" value={listing.status} />
               <StatusBadge kind="listingType" value={listing.listing_type} />
               <Badge tone="neutral">{listing.industry}</Badge>
             </div>
@@ -247,8 +250,18 @@ export default async function ListingDetailPage({ params }: Props) {
         />
       )}
 
-      {/* Bid CTA */}
-      {ndaSigned && (
+      {/* Bid CTA — hidden once the listing is closed to new bids */}
+      {ndaSigned && isClosed && (
+        <GlassCard className="space-y-1 p-6">
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            This listing is closed
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {listing.company_name} is no longer accepting new bids.
+          </p>
+        </GlassCard>
+      )}
+      {ndaSigned && !isClosed && (
         <GlassCard className="space-y-4 p-6">
           <div className="space-y-1">
             <h2 className="font-display text-lg font-semibold text-foreground">

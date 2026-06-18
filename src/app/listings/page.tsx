@@ -10,7 +10,7 @@ export default async function ListingsPage() {
   const { data: listings } = await supabase
     .from('listings')
     .select('id, admin_id, company_name, logo_url, description, listing_type, industry, status, created_at, updated_at')
-    .eq('status', 'published')
+    .in('status', ['published', 'closed'])
     .order('created_at', { ascending: false })
 
   return <ListingsBrowser listings={(listings ?? []) as ListingPublic[]} />

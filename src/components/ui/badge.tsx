@@ -45,6 +45,13 @@ const LISTING_STATUS: Record<string, { tone: Tone; label: string }> = {
   draft: { tone: 'neutral', label: 'Draft' },
   closed: { tone: 'danger', label: 'Closed' },
 }
+// User-facing activity badge: a published listing is "Active" (accepting bids),
+// a closed listing is "Closed" (no new bids).
+const LISTING_ACTIVITY: Record<string, { tone: Tone; label: string }> = {
+  published: { tone: 'success', label: 'Active' },
+  closed: { tone: 'neutral', label: 'Closed' },
+  draft: { tone: 'neutral', label: 'Draft' },
+}
 const BID_STATUS: Record<string, { tone: Tone; label: string }> = {
   placed: { tone: 'neutral', label: 'Placed' },
   pending_acceptance: { tone: 'info', label: 'Pending Acceptance' },
@@ -63,6 +70,7 @@ const KYC_STATUS: Record<string, { tone: Tone; label: string }> = {
 const MAPS = {
   listingType: LISTING_TYPE,
   listingStatus: LISTING_STATUS,
+  listingActivity: LISTING_ACTIVITY,
   bidStatus: BID_STATUS,
   kycStatus: KYC_STATUS,
 } as const

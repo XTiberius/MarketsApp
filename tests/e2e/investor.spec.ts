@@ -248,3 +248,22 @@ test('newsfeed refresh is forbidden for non-admins', async ({ page }) => {
   const res = await page.request.post(`/api/listings/${listingId}/newsfeed`)
   expect(res.status()).toBe(403)
 })
+
+// A closed listing is viewable but shows as closed with no bid CTA.
+test('a closed listing shows as closed with no bid option', async ({ page }) => {
+  const supabase = adminClient()
+  const { investorId, listingId } = await fixtureIds(supabase)
+  await supabase.from('nda_signatures').delete().eq('investor_id', investorId).eq('listing_id', listingId)
+  await supabase.from('nda_signatures').insert({
+    investor_id: investorId,
+    listing_id: listingId,
+    signature_image_url: 'https://example.test/e2e-signature.png',
+  })
+  await supabase.from('listings').update({ status: 'closed' }).eq('id', listingId)
+
+  await page.goto(`/listings/${listingId}`)
+  await expect(page.getByText('This listing is closed')).toBeVisible()
+  await expect(page.getByTestId('bid-open-button')).toHaveCount(0)
+
+  await supabase.from('listings').update({ status: 'published' }).eq('id', listingId)
+})

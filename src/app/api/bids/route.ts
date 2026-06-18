@@ -33,12 +33,19 @@ export async function POST(req: NextRequest) {
 
   const { data: listing, error: listingError } = await supabase
     .from('listings')
-    .select('minimum_investment')
+    .select('minimum_investment, status')
     .eq('id', listing_id)
     .single()
 
   if (listingError || !listing) {
     return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
+  }
+
+  if (listing.status !== 'published') {
+    return NextResponse.json(
+      { error: 'This listing is closed to new bids.' },
+      { status: 400 }
+    )
   }
 
   const minBid = listing.minimum_investment ?? DEFAULT_MIN_BID

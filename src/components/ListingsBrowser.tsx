@@ -24,6 +24,7 @@ const ALL = 'all'
 export function ListingsBrowser({ listings }: Props) {
   const [query, setQuery] = useState('')
   const [type, setType] = useState<string>(ALL)
+  const [activity, setActivity] = useState<string>(ALL)
   const [industry, setIndustry] = useState<string>(ALL)
   const [sort, setSort] = useState<SortKey>('newest')
 
@@ -40,6 +41,8 @@ export function ListingsBrowser({ listings }: Props) {
     const filtered = listings.filter((l) => {
       if (q && !l.company_name.toLowerCase().includes(q)) return false
       if (type !== ALL && l.listing_type !== type) return false
+      if (activity === 'active' && l.status !== 'published') return false
+      if (activity === 'closed' && l.status !== 'closed') return false
       if (industry !== ALL && l.industry !== industry) return false
       return true
     })
@@ -48,21 +51,21 @@ export function ListingsBrowser({ listings }: Props) {
       if (sort === 'company') return a.company_name.localeCompare(b.company_name)
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     })
-  }, [listings, query, type, industry, sort])
+  }, [listings, query, type, activity, industry, sort])
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
       <header className="mb-8">
         <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Active Listings
+          Listings
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Browse available investment opportunities
+          Browse investment opportunities
         </p>
       </header>
 
       <GlassCard className="mb-8 p-4 sm:p-5">
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto] lg:items-center">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_auto_auto_auto_auto] lg:items-center">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -83,6 +86,17 @@ export function ListingsBrowser({ listings }: Props) {
               <SelectItem value={ALL}>All types</SelectItem>
               <SelectItem value="primary">Primary</SelectItem>
               <SelectItem value="secondary">Secondary</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={activity} onValueChange={setActivity}>
+            <SelectTrigger className="lg:w-40" aria-label="Filter by status">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>All status</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
             </SelectContent>
           </Select>
 

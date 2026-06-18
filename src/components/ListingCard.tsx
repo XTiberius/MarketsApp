@@ -23,6 +23,7 @@ export function ListingCard({ listing }: Props) {
 
         <div className="flex flex-1 flex-col gap-3 px-5 py-4">
           <div className="flex flex-wrap items-center gap-2">
+            <StatusBadge kind="listingActivity" value={listing.status} />
             <StatusBadge kind="listingType" value={listing.listing_type} />
             <Badge tone="neutral">{listing.industry}</Badge>
           </div>
