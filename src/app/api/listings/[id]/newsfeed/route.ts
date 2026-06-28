@@ -1,10 +1,14 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import type { NewsfeedBullet } from '@/lib/types'
 
 const DISCLOSURE =
   'This is AI generated and is subject to make mistakes. This is not investment advice and user understands Ionic Markets advises to do your own research and Ionic Markets is not responsible for investment decisions made as a result of this summary.'
+
+// Deliberately a small, cost-efficient model (not the strongest) with web search —
+// this is grunt summarization, so we keep token spend low.
+const NEWSFEED_MODEL = 'gpt-4.1-mini'
 
 export async function POST(
   _req: NextRequest,
@@ -27,9 +31,9 @@ export async function POST(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json(
-      { error: 'AI newsfeed is not configured (ANTHROPIC_API_KEY missing).' },
+      { error: 'AI newsfeed is not configured (OPENAI_API_KEY missing).' },
       { status: 503 }
     )
   }
@@ -44,18 +48,14 @@ export async function POST(
   if (!listing) return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
 
   const { company_name, description } = listing
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-  const resp = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1024,
-    tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],
-    messages: [{ role: 'user', content: `You are a research analyst. Using web search, find recent, relevant developments about the private company "${company_name}". Context: ${description}. Return 3 to 7 short, factual bullet points about notable RECENT events (≈ last 12 months). No advice, no fluff. Respond with ONLY a JSON object on the last line: {"bullets": ["...", "..."]}` }],
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+  const resp = await client.responses.create({
+    model: NEWSFEED_MODEL,
+    tools: [{ type: 'web_search' }],
+    input: `You are a research analyst. Using web search, find recent, relevant developments about the private company "${company_name}". Context: ${description}. Return 3 to 7 short, factual bullet points about notable RECENT events (≈ last 12 months). No advice, no fluff. Respond with ONLY a JSON object on the last line: {"bullets": ["...", "..."]}`,
   })
 
-  const text = resp.content
-    .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-    .map((block) => block.text)
-    .join('\n')
+  const text = resp.output_text ?? ''
 
   const bulletTexts = extractBullets(text).slice(0, 7)
   if (bulletTexts.length < 1) {

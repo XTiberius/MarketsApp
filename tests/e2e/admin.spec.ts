@@ -265,7 +265,7 @@ test('uploads the executed NII and the bid advances to pending acceptance', asyn
   await expect(page.getByText('Pending Acceptance').first()).toBeVisible({ timeout: 20_000 })
 })
 
-// Newsfeed route is gated: configured-check returns 503 when ANTHROPIC_API_KEY is absent.
+// Newsfeed route is gated: configured-check returns 503 when OPENAI_API_KEY is absent.
 test('newsfeed refresh returns 503 when AI is not configured', async ({ page }) => {
   const { listingId } = await fixtureIds(adminClient())
   const res = await page.request.post(`/api/listings/${listingId}/newsfeed`)

@@ -20,31 +20,21 @@ the Vercel project → Settings → Environment Variables (Production), then red
   needed locally for the Playwright e2e harness).
 - `RESEND_API_KEY` + `EMAIL_FROM` (+ a verified Resend sending domain) — branded status /
   notification emails. Without them, `src/lib/email.ts` logs a stub and no email sends.
-- `ANTHROPIC_API_KEY` — currently powers the AI newsfeed (`/api/listings/[id]/newsfeed`);
-  without it the admin "Refresh" returns **503**. **But see item 2** — we intend to move
-  this feature off Anthropic, so prefer wiring `OPENAI_API_KEY` instead once item 2 lands.
+- `OPENAI_API_KEY` — powers the AI newsfeed (`/api/listings/[id]/newsfeed`, now on OpenAI
+  `gpt-4.1-mini` + web search — see item 2). Without it the admin "Refresh" returns **503**.
+  Set it in Vercel (Production) and locally in `.env.local` to enable generation.
 - Already set (app builds + serves fine): `NEXT_PUBLIC_SUPABASE_URL`,
   `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
-## 2. [ ] AI newsfeed: generate summaries with OpenAI/ChatGPT instead of Claude
-**Why:** Brain model-routing policy — push grunt work to ChatGPT/GPT (more token-efficient
-than Claude for this). The newsfeed summary generation is exactly that kind of grunt work.
-**Note:** "Codex" is a dev-time CLI; the *app runtime* can't call it — it must call the
-**OpenAI API** directly (a GPT model), not the Codex CLI.
-
-- File: `src/app/api/listings/[id]/newsfeed/route.ts`. Today it uses `@anthropic-ai/sdk`
-  with `claude-sonnet-4-6` + Anthropic's `web_search_20250305` server tool, parses a
-  trailing-JSON `{bullets:[...]}` (with a line-bullet fallback), caches into
-  `listing_newsfeed` (upsert on `listing_id`), and is admin-only + NDA-gated on display.
-- To do: reimplement generation with the OpenAI API (Responses API + web_search tool, or
-  equivalent) producing the same 3–7 factual bullets. Switch the env guard from
-  `ANTHROPIC_API_KEY` → `OPENAI_API_KEY` (keep the **503-when-missing** behavior). Re-do the
-  JSON-bullet parse for OpenAI's response shape. **Keep unchanged:** the disclosure text,
-  caching, admin guard (403 for non-admins), NDA gating, on-demand Refresh.
-- Cleanup after migrating: remove the `@anthropic-ai/sdk` dependency and, if present, the
-  hand-rolled type shim. Verify web-search quality is acceptable on OpenAI.
-- Trade-off note: the `claude-api` skill defaults to Claude; choosing OpenAI here is a
-  deliberate cost decision per the user.
+## 2. [x] AI newsfeed: generate summaries with OpenAI instead of Claude — DONE
+`src/app/api/listings/[id]/newsfeed/route.ts` now uses the **OpenAI** SDK Responses API with
+`gpt-4.1-mini` (a cheap model, deliberately not the strongest) + the `web_search` tool, reading
+`resp.output_text`. Same trailing-JSON `{bullets:[...]}` parse + line-bullet fallback, same
+`listing_newsfeed` upsert, admin-only guard, NDA-gated display, on-demand Refresh. Env guard is
+now `OPENAI_API_KEY` → **503** when missing. `@anthropic-ai/sdk` was removed.
+- Remaining: set `OPENAI_API_KEY` in Vercel + `.env.local` (item 1). A live web-search call
+  couldn't be run from this session (secrets-guard blocks `--env-file`); verify via the admin
+  "Refresh newsfeed" button, or `node --env-file=.env.local tests/verify-newsfeed.mjs` locally.
 
 ## 3. [ ] Team page — build the bust animations + add the other members/bios
 The public `/team` page exists (any visitor; `src/app/team/page.tsx`). Currently shows only
