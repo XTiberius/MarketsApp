@@ -250,11 +250,16 @@ body {
 }
 
 /* Apple-style refraction — warp the backdrop behind glass (Chromium). The base
-   blur/saturate from the utility stays for browsers without url() backdrop filters. */
-@supports ((backdrop-filter: url("#g")) or (-webkit-backdrop-filter: url("#g"))) {
-  .glass {
-    -webkit-backdrop-filter: url(#glass-distortion) blur(7px) saturate(180%) brightness(1.08);
-    backdrop-filter: url(#glass-distortion) blur(7px) saturate(180%) brightness(1.08);
+   blur/saturate from the utility stays for browsers without url() backdrop filters.
+   Gated to fine-pointer (non-touch) devices: the SVG displacement filter repaints
+   on scroll and is a major source of jank on phones, which fall back to the
+   cheaper plain blur() above. */
+@media (hover: hover) and (pointer: fine) {
+  @supports ((backdrop-filter: url("#g")) or (-webkit-backdrop-filter: url("#g"))) {
+    .glass {
+      -webkit-backdrop-filter: url(#glass-distortion) blur(7px) saturate(180%) brightness(1.08);
+      backdrop-filter: url(#glass-distortion) blur(7px) saturate(180%) brightness(1.08);
+    }
   }
 }
 

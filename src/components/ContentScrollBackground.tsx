@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const FRAME_COUNT = 151
 const HERO_VH = 1.8 // hero section is 180vh
@@ -18,6 +19,11 @@ export function ContentScrollBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const imagesRef = useRef<HTMLImageElement[]>([])
   const [reduced, setReduced] = useState(false)
+  const isMobile = useIsMobile()
+
+  // Mobile / reduced-motion render the static poster instead of the 151-frame
+  // canvas scrub — no frame decode, no per-scroll canvas draw.
+  const inert = reduced || isMobile
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -28,7 +34,7 @@ export function ContentScrollBackground() {
   }, [])
 
   useEffect(() => {
-    if (reduced) return
+    if (inert) return
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx) return
@@ -36,11 +42,19 @@ export function ContentScrollBackground() {
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     let lastDrawn = -1
 
+    // Scroll metrics are cached and recomputed on resize, not read per frame
+    // (reading scrollHeight forces layout).
+    let heroEnd = 0
+    let denom = 1
+    const measure = () => {
+      heroEnd = window.innerHeight * HERO_VH
+      const total = document.documentElement.scrollHeight - window.innerHeight
+      denom = Math.max(1, total - heroEnd)
+    }
+
     // Frame from scroll position within the post-hero (content) region.
     const frameForScroll = () => {
-      const heroEnd = window.innerHeight * HERO_VH
-      const total = document.documentElement.scrollHeight - window.innerHeight
-      const cp = Math.min(1, Math.max(0, (window.scrollY - heroEnd) / Math.max(1, total - heroEnd)))
+      const cp = Math.min(1, Math.max(0, (window.scrollY - heroEnd) / denom))
       return Math.round(cp * (FRAME_COUNT - 1))
     }
 
@@ -87,6 +101,7 @@ export function ContentScrollBackground() {
     const resize = () => {
       canvas.width = Math.round(window.innerWidth * dpr)
       canvas.height = Math.round(window.innerHeight * dpr)
+      measure()
       lastDrawn = -1
       render()
     }
@@ -105,20 +120,26 @@ export function ContentScrollBackground() {
     resize()
     window.addEventListener('resize', resize)
 
-    let raf = 0
-    const tick = () => {
-      render()
-      raf = requestAnimationFrame(tick)
+    // Only do work while actually scrolling — one rAF per scroll burst, nothing
+    // at idle (replaces the previous always-on 60fps loop).
+    let ticking = false
+    const onScroll = () => {
+      if (ticking) return
+      ticking = true
+      requestAnimationFrame(() => {
+        render()
+        ticking = false
+      })
     }
-    raf = requestAnimationFrame(tick)
+    window.addEventListener('scroll', onScroll, { passive: true })
 
     return () => {
       window.removeEventListener('resize', resize)
-      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', onScroll)
     }
-  }, [reduced])
+  }, [inert])
 
-  if (reduced) {
+  if (inert) {
     return (
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div

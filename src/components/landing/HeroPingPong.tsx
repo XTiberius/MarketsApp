@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { Play } from 'lucide-react'
 import { useScroll, useMotionValueEvent, useReducedMotion } from 'framer-motion'
+import { useIsMobile } from '@/hooks/useIsMobile'
 
 const MOTTO = 'Your guide to private markets'
 
@@ -10,26 +12,54 @@ const MOTTO = 'Your guide to private markets'
  * wordmark settles in on load. As you scroll through the tall section, the video
  * blurs and a dark gradient fills from the bottom until the viewport is fully
  * solid --background — the separator before the scroll-scrub content begins.
+ *
+ * Desktop is unchanged. On mobile the scroll-driven video blur is dropped (a
+ * full-screen playing-video repaint is the main scroll-jank source there), and
+ * autoplay is made robust: the `muted` DOM *property* is set imperatively (React
+ * doesn't reliably apply the `muted` attribute, which iOS requires for inline
+ * autoplay), with a tap-to-play fallback when a device still blocks it.
  */
 export function HeroPingPong() {
   const reduce = useReducedMotion()
+  const isMobile = useIsMobile()
   const sectionRef = useRef<HTMLElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
   const gradRef = useRef<HTMLDivElement>(null)
   const solidRef = useRef<HTMLDivElement>(null)
+  const [needsTap, setNeedsTap] = useState(false)
 
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] })
   const clamp = (v: number) => Math.min(1, Math.max(0, v))
 
-  // Pause auto-play under reduced-motion (poster shows instead).
+  // Robust autoplay. Pause is intentional only for a deliberate desktop
+  // reduced-motion preference; on mobile (where Low Power Mode also forces
+  // reduced-motion) we always try to play so the hero isn't a dead poster.
   useEffect(() => {
-    if (reduce) videoRef.current?.pause()
-  }, [reduce])
+    const v = videoRef.current
+    if (!v) return
+    v.muted = true
+    v.playsInline = true
+    if (reduce && !isMobile) {
+      v.pause()
+      return
+    }
+    const p = v.play()
+    if (p) p.then(() => setNeedsTap(false)).catch(() => setNeedsTap(true))
+  }, [reduce, isMobile])
+
+  function handleTap() {
+    const v = videoRef.current
+    if (!v) return
+    v.muted = true
+    v.play().then(() => setNeedsTap(false)).catch(() => {})
+  }
 
   useMotionValueEvent(scrollYProgress, 'change', (p) => {
-    if (reduce) return
-    if (videoRef.current) {
+    // Deliberate desktop reduced-motion: leave everything at rest (poster).
+    if (reduce && !isMobile) return
+    // Video blur scrub is desktop-only — the costly repaint on mobile.
+    if (!isMobile && videoRef.current) {
       videoRef.current.style.filter = `blur(${(p * 26).toFixed(1)}px) saturate(115%) brightness(0.85)`
     }
     if (textRef.current) {
@@ -64,6 +94,20 @@ export function HeroPingPong() {
             background: 'radial-gradient(120% 80% at 50% 38%, transparent 0%, hsl(var(--background) / 0.38) 82%)',
           }}
         />
+
+        {/* tap-to-play fallback when a device blocks autoplay (e.g. Low Power Mode) */}
+        {needsTap && (
+          <button
+            type="button"
+            onClick={handleTap}
+            aria-label="Play background video"
+            className="absolute inset-0 z-30 flex items-center justify-center"
+          >
+            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/40 bg-black/30 backdrop-blur-sm">
+              <Play className="h-7 w-7 translate-x-0.5 text-white" />
+            </span>
+          </button>
+        )}
 
         {/* IONIC intro text (settles in on load, fades out on scroll) */}
         <div ref={textRef} className="absolute inset-0 z-10 flex flex-col items-center justify-center px-4 text-center">

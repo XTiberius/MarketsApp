@@ -9,6 +9,8 @@ import { useEffect } from 'react'
  */
 export function GlassPointer() {
   useEffect(() => {
+    // Touch devices have no hovering pointer — skip the listener entirely.
+    if (window.matchMedia('(pointer: coarse)').matches) return
     const onMove = (e: PointerEvent) => {
       const el = (e.target as HTMLElement)?.closest?.('.glass') as HTMLElement | null
       if (!el) return
