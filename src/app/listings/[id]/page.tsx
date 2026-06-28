@@ -4,7 +4,7 @@ import { ArrowLeft, Lock, FileText, Download } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { requireAuth } from '@/lib/auth'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { BidModal } from '@/components/BidModal'
+import { BidModal, type EndUserOption } from '@/components/BidModal'
 import { NDAModal } from '@/components/NDAModal'
 import { ListingLogo } from '@/components/ListingLogo'
 import { FundingRoundsChart } from '@/components/FundingRoundsChart'
@@ -88,6 +88,31 @@ export default async function ListingDetailPage({ params }: Props) {
     memorandum: 'Investment Memorandum',
     pitch_deck: 'Pitch Deck',
     other: 'Document',
+  }
+
+  // End-users this account can bid as: the individual profile (if registered)
+  // and each registered entity. The bid modal asks the holder to pick one.
+  const endUsers: EndUserOption[] = []
+  if (!isClosed && ndaSigned) {
+    const { data: kycInd } = await supabase
+      .from('kyc_individual')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (kycInd) {
+      endUsers.push({
+        kind: 'individual',
+        label: `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim() || 'Individual',
+      })
+    }
+    const { data: kycEnts } = await supabase
+      .from('kyc_entity')
+      .select('id, entity_name')
+      .eq('user_id', user.id)
+      .order('entity_name', { ascending: true })
+    for (const e of kycEnts ?? []) {
+      endUsers.push({ kind: 'entity', entityId: e.id, label: e.entity_name })
+    }
   }
 
   return (
@@ -275,6 +300,7 @@ export default async function ListingDetailPage({ params }: Props) {
             listingId={listing.id}
             companyName={listing.company_name}
             minimumInvestment={listing.minimum_investment}
+            endUsers={endUsers}
           />
         </GlassCard>
       )}

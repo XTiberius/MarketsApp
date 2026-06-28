@@ -8,14 +8,16 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { StatusBadge } from '@/components/ui/badge'
+import { EndUserBadge } from '@/components/EndUserBadge'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '@/lib/storage'
 import { uploadToPrivateBucket, removeFromBucket } from '@/lib/upload-client'
-import type { AssociatedDocument, Bid, BidStatus, DocumentType } from '@/lib/types'
+import type { AssociatedDocument, Bid, BidStatus, DocumentType, EntityType } from '@/lib/types'
 
 export type AdminBid = Bid & {
   listings: { company_name: string }
-  users: { email: string }
+  users: { email: string; first_name: string | null; last_name: string | null }
+  entity: { entity_name: string; entity_type: EntityType } | null
   associated_documents: AssociatedDocument[]
 }
 
@@ -35,6 +37,12 @@ const DOC_LABELS: Record<DocumentType, string> = {
 
 function wordCount(s: string): number {
   return s.trim().split(/\s+/).filter(Boolean).length
+}
+
+/** Account-holder display name, falling back to the email when names are unset. */
+function accountHolderName(bid: AdminBid): string {
+  const name = `${bid.users.first_name ?? ''} ${bid.users.last_name ?? ''}`.trim()
+  return name || bid.users.email
 }
 
 export function BidModuleAdmin({ bid: initialBid }: { bid: AdminBid }) {
@@ -140,13 +148,20 @@ export function BidModuleAdmin({ bid: initialBid }: { bid: AdminBid }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-display text-lg font-semibold text-foreground">
-            {bid.listings.company_name}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {bid.users.email} · {formatDate(bid.created_at)}
-          </p>
+        <div className="min-w-0 space-y-2">
+          <div>
+            <p className="font-display text-lg font-semibold text-foreground">
+              {bid.listings.company_name}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {accountHolderName(bid)} · {bid.users.email} · {formatDate(bid.created_at)}
+            </p>
+          </div>
+          <EndUserBadge
+            investorKind={bid.investor_kind}
+            entityName={bid.entity?.entity_name}
+            holderName={accountHolderName(bid)}
+          />
         </div>
         <div className="flex flex-col items-end gap-2">
           <p className="font-mono text-lg font-semibold text-foreground">

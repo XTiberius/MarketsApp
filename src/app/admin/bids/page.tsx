@@ -10,7 +10,9 @@ export default async function AdminBidsPage() {
 
   const { data: bids } = await supabase
     .from('bids')
-    .select('*, listings(company_name), users(email), associated_documents(*)')
+    .select(
+      '*, listings(company_name), users(email, first_name, last_name), entity:kyc_entity!bids_entity_id_fkey(entity_name, entity_type), associated_documents(*)'
+    )
     .order('created_at', { ascending: false })
 
   return (

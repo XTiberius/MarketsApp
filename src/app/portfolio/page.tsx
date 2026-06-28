@@ -13,13 +13,14 @@ export default async function PortfolioPage() {
   const { data: bids } = await supabase
     .from('bids')
     .select(
-      '*, associated_documents(*), listings(company_name, industry, ai_newsfeed_enabled, funding_rounds(*), listing_newsfeed(*))'
+      '*, associated_documents(*), entity:kyc_entity!bids_entity_id_fkey(entity_name), listings(company_name, industry, ai_newsfeed_enabled, funding_rounds(*), listing_newsfeed(*))'
     )
     .eq('investor_id', user.id)
     .eq('status', 'invested')
     .order('invested_at', { ascending: false })
 
   const positions = (bids ?? []) as unknown as PortfolioBid[]
+  const holderName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim()
   const active = positions.filter((b) => b.portfolio_status !== 'closed')
   const closed = positions.filter((b) => b.portfolio_status === 'closed')
 
@@ -49,7 +50,7 @@ export default async function PortfolioPage() {
             <section className="space-y-4">
               <h2 className="font-display text-xl font-semibold tracking-tight">Active</h2>
               {active.map((bid) => (
-                <PortfolioItem key={bid.id} bid={bid} />
+                <PortfolioItem key={bid.id} bid={bid} holderName={holderName} />
               ))}
             </section>
           )}
@@ -58,7 +59,7 @@ export default async function PortfolioPage() {
             <section className="space-y-4">
               <h2 className="font-display text-xl font-semibold tracking-tight">Closed</h2>
               {closed.map((bid) => (
-                <PortfolioItem key={bid.id} bid={bid} />
+                <PortfolioItem key={bid.id} bid={bid} holderName={holderName} />
               ))}
             </section>
           )}

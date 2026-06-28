@@ -14,19 +14,40 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+
+/** One end-user the account can bid as: the individual profile, or a registered entity. */
+export type EndUserOption =
+  | { kind: 'individual'; label: string }
+  | { kind: 'entity'; entityId: string; label: string }
 
 interface Props {
   listingId: string
   companyName: string
   minimumInvestment?: number | null
+  endUsers: EndUserOption[]
 }
 
 const DEFAULT_MIN_BID = 50_000
 
-export function BidModal({ listingId, companyName, minimumInvestment }: Props) {
+/** Stable value used in the <Select>: 'individual' or `entity:<id>`. */
+function optionValue(o: EndUserOption): string {
+  return o.kind === 'individual' ? 'individual' : `entity:${o.entityId}`
+}
+
+export function BidModal({ listingId, companyName, minimumInvestment, endUsers }: Props) {
   const minBid = minimumInvestment ?? DEFAULT_MIN_BID
   const [open, setOpen] = useState(false)
   const [amount, setAmount] = useState('')
+  const [endUser, setEndUser] = useState<string>(
+    endUsers.length === 1 ? optionValue(endUsers[0]) : ''
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -44,10 +65,24 @@ export function BidModal({ listingId, companyName, minimumInvestment }: Props) {
       return
     }
 
+    if (!endUser) {
+      setError('Please choose who this bid is from.')
+      setLoading(false)
+      return
+    }
+
+    const investor_kind = endUser === 'individual' ? 'individual' : 'entity'
+    const entity_id = endUser.startsWith('entity:') ? endUser.slice('entity:'.length) : null
+
     const res = await fetch('/api/bids', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ listing_id: listingId, amount: numericAmount }),
+      body: JSON.stringify({
+        listing_id: listingId,
+        amount: numericAmount,
+        investor_kind,
+        entity_id,
+      }),
     })
 
     const data = await res.json()
@@ -106,6 +141,33 @@ export function BidModal({ listingId, companyName, minimumInvestment }: Props) {
             </DialogHeader>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {endUsers.length > 1 ? (
+                <div className="space-y-1.5">
+                  <Label htmlFor="bid-end-user">Bidding as</Label>
+                  <Select value={endUser} onValueChange={setEndUser}>
+                    <SelectTrigger id="bid-end-user" data-testid="bid-end-user">
+                      <SelectValue placeholder="Select who this bid is from" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {endUsers.map((o) => (
+                        <SelectItem key={optionValue(o)} value={optionValue(o)}>
+                          {o.label}
+                          {o.kind === 'entity' ? ' · Entity' : ' · Individual'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : endUsers.length === 1 ? (
+                <div className="space-y-1.5">
+                  <Label>Bidding as</Label>
+                  <p className="rounded-xl border border-border bg-[hsl(var(--background)/0.4)] px-3.5 py-2 text-sm text-foreground">
+                    {endUsers[0].label}
+                    {endUsers[0].kind === 'entity' ? ' · Entity' : ' · Individual'}
+                  </p>
+                </div>
+              ) : null}
+
               <div className="space-y-1.5">
                 <Label htmlFor="bid-amount">Bid Amount (USD)</Label>
                 <Input

@@ -2,6 +2,8 @@
 
 export type UserRole = 'investor' | 'admin'
 export type KycStatus = 'pending' | 'approved' | 'rejected'
+export type AccountType = 'individual' | 'entity' | 'both'
+export type InvestorKind = 'individual' | 'entity'
 export type EntityType = 'LLC' | 'Corp' | 'Fund' | 'Trust' | 'Partnership' | 'Other'
 export type ListingType = 'primary' | 'secondary'
 export type ListingStatus = 'draft' | 'published' | 'closed'
@@ -34,6 +36,7 @@ export interface User {
   last_name: string | null
   role: UserRole
   kyc_status: KycStatus
+  account_type: AccountType | null
   created_at: string
 }
 
@@ -46,6 +49,10 @@ export interface KycIndividual {
   address: string
   phone: string
   occupation: string
+  residence: string | null
+  primary_citizenship: string | null
+  ssn_last4: string | null
+  origin_of_funds: string | null
   accredited_investor: boolean
   submitted_at: string | null
   reviewed_at: string | null
@@ -58,10 +65,12 @@ export interface KycEntity {
   entity_name: string
   entity_type: EntityType
   ein: string
+  incorporation_location: string | null
   address: string
   phone: string
   owner_info: { name: string; title: string }
   signatory_info: { name: string; title: string }
+  origin_of_funds: string | null
   accredited_investor: boolean
   submitted_at: string | null
   reviewed_at: string | null
@@ -106,6 +115,8 @@ export interface Bid {
   invested_principal: number | null
   returned_principal: number | null
   closed_at: string | null
+  investor_kind: InvestorKind | null
+  entity_id: string | null
   nda_signed: boolean
   nda_signed_at: string | null
   created_at: string

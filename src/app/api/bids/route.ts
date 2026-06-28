@@ -25,10 +25,45 @@ export async function POST(req: NextRequest) {
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { listing_id, amount } = await req.json()
+  const { listing_id, amount, investor_kind, entity_id } = await req.json()
 
   if (!listing_id || !amount) {
     return NextResponse.json({ error: 'listing_id and amount are required' }, { status: 400 })
+  }
+
+  if (investor_kind !== 'individual' && investor_kind !== 'entity') {
+    return NextResponse.json({ error: 'A valid end-user is required.' }, { status: 400 })
+  }
+
+  // Validate the chosen end-user belongs to this account.
+  if (investor_kind === 'individual') {
+    const { data: ind } = await supabase
+      .from('kyc_individual')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!ind) {
+      return NextResponse.json(
+        { error: 'No individual profile found for your account.' },
+        { status: 400 }
+      )
+    }
+  } else {
+    if (!entity_id) {
+      return NextResponse.json({ error: 'entity_id is required for an entity bid.' }, { status: 400 })
+    }
+    const { data: ent } = await supabase
+      .from('kyc_entity')
+      .select('id')
+      .eq('id', entity_id)
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!ent) {
+      return NextResponse.json(
+        { error: 'That entity does not belong to your account.' },
+        { status: 400 }
+      )
+    }
   }
 
   const { data: listing, error: listingError } = await supabase
@@ -58,7 +93,14 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('bids')
-    .insert({ investor_id: user.id, listing_id, amount, status: 'placed' })
+    .insert({
+      investor_id: user.id,
+      listing_id,
+      amount,
+      status: 'placed',
+      investor_kind,
+      entity_id: investor_kind === 'entity' ? entity_id : null,
+    })
     .select()
     .single()
 

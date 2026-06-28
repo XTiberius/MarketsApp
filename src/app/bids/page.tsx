@@ -8,10 +8,12 @@ import { StatusBadge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { BidTimeline } from '@/components/BidTimeline'
 import { BidDocumentList } from '@/components/BidDocumentList'
+import { EndUserBadge } from '@/components/EndUserBadge'
 import type { AssociatedDocument, Bid, Listing } from '@/lib/types'
 
 type BidWithListing = Bid & {
   listings: Pick<Listing, 'company_name' | 'industry'>
+  entity: { entity_name: string } | null
   associated_documents: AssociatedDocument[]
 }
 
@@ -21,9 +23,13 @@ export default async function BidsPage() {
 
   const { data: bids } = await supabase
     .from('bids')
-    .select('*, listings(company_name, industry), associated_documents(*)')
+    .select(
+      '*, listings(company_name, industry), entity:kyc_entity!bids_entity_id_fkey(entity_name), associated_documents(*)'
+    )
     .eq('investor_id', user.id)
     .order('created_at', { ascending: false })
+
+  const holderName = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim()
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -63,6 +69,11 @@ export default async function BidsPage() {
                     {formatCurrency(bid.amount)}
                   </p>
                   <StatusBadge kind="bidStatus" value={bid.status} />
+                  <EndUserBadge
+                    investorKind={bid.investor_kind}
+                    entityName={bid.entity?.entity_name}
+                    holderName={holderName}
+                  />
                 </div>
               </div>
 

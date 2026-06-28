@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { BidDocumentList } from '@/components/BidDocumentList'
+import { EndUserBadge } from '@/components/EndUserBadge'
 import { FundingRoundsChart } from '@/components/FundingRoundsChart'
 import { NewsfeedSummary } from '@/components/NewsfeedSummary'
 import type {
@@ -26,6 +27,7 @@ export type PortfolioBid = Bid & {
     // unique(listing_id) → PostgREST embeds this as a single object (or null), not an array.
     listing_newsfeed: ListingNewsfeed | ListingNewsfeed[] | null
   }
+  entity: { entity_name: string } | null
   associated_documents: AssociatedDocument[]
 }
 
@@ -43,7 +45,13 @@ function formatRoi(roi: number): string {
 /** One portfolio position. The summary (company, status, value/ROI) is always
  *  visible; the documents, funding chart, and newsfeed are collapsed behind a
  *  click-to-expand header to keep the page uncluttered. */
-export function PortfolioItem({ bid }: { bid: PortfolioBid }) {
+export function PortfolioItem({
+  bid,
+  holderName,
+}: {
+  bid: PortfolioBid
+  holderName?: string
+}) {
   const listing = bid.listings
   const rounds = [...(listing.funding_rounds ?? [])].sort(
     (a, b) => a.sequence_order - b.sequence_order
@@ -72,9 +80,16 @@ export function PortfolioItem({ bid }: { bid: PortfolioBid }) {
                     {listing.industry}
                   </p>
                 </div>
-                {bid.invested_at && (
-                  <Badge tone="success">Executed {formatDate(bid.invested_at)}</Badge>
-                )}
+                <div className="flex flex-wrap items-center gap-2">
+                  {bid.invested_at && (
+                    <Badge tone="success">Executed {formatDate(bid.invested_at)}</Badge>
+                  )}
+                  <EndUserBadge
+                    investorKind={bid.investor_kind}
+                    entityName={bid.entity?.entity_name}
+                    holderName={holderName}
+                  />
+                </div>
               </div>
               {closed ? (
                 <div className="flex flex-col items-end gap-1 text-sm font-normal">

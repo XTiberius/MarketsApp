@@ -81,7 +81,15 @@ export default async function ProfilePage() {
     .from('kyc_individual')
     .select('*')
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
+
+  const { data: kycEntities } = await supabase
+    .from('kyc_entity')
+    .select('id, entity_name, entity_type')
+    .eq('user_id', user.id)
+    .order('entity_name', { ascending: true })
+
+  const hasSubmitted = !!kycIndividual || (kycEntities?.length ?? 0) > 0
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
@@ -106,20 +114,40 @@ export default async function ProfilePage() {
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-display text-lg font-semibold">KYC Information</h2>
-          {kycIndividual && <KycProgress status={user.kyc_status} />}
+          {hasSubmitted && <KycProgress status={user.kyc_status} />}
         </div>
 
-        {kycIndividual ? (
-          <GlassCard className="p-6 text-sm space-y-2">
-            <p>
-              <span className="text-muted-foreground">Name:</span>{' '}
-              {kycIndividual.first_name} {kycIndividual.last_name}
-            </p>
+        {hasSubmitted ? (
+          <GlassCard className="p-6 text-sm space-y-3">
+            {user.account_type && (
+              <p>
+                <span className="text-muted-foreground">Investing as:</span>{' '}
+                <span className="capitalize">{user.account_type}</span>
+              </p>
+            )}
+            {kycIndividual && (
+              <p>
+                <span className="text-muted-foreground">Individual:</span>{' '}
+                {kycIndividual.first_name} {kycIndividual.last_name}
+              </p>
+            )}
+            {(kycEntities?.length ?? 0) > 0 && (
+              <div>
+                <p className="text-muted-foreground">Entities:</p>
+                <ul className="mt-1 list-disc pl-5">
+                  {kycEntities!.map((e) => (
+                    <li key={e.id}>
+                      {e.entity_name} <span className="text-muted-foreground">({e.entity_type})</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <p>
               <span className="text-muted-foreground">Submitted:</span>{' '}
-              {kycIndividual.submitted_at ? formatDate(kycIndividual.submitted_at) : '—'}
+              {kycIndividual?.submitted_at ? formatDate(kycIndividual.submitted_at) : '—'}
             </p>
-            {user.kyc_status === 'rejected' && kycIndividual.admin_notes && (
+            {user.kyc_status === 'rejected' && kycIndividual?.admin_notes && (
               <div className="mt-3 rounded-xl border border-[hsl(var(--danger)/0.35)] bg-[hsl(var(--danger)/0.12)] p-3 text-xs text-danger">
                 <p className="font-medium">Review notes:</p>
                 <p>{kycIndividual.admin_notes}</p>
