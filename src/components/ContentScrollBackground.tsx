@@ -21,9 +21,10 @@ export function ContentScrollBackground() {
   const [reduced, setReduced] = useState(false)
   const isMobile = useIsMobile()
 
-  // Mobile / reduced-motion render the static poster instead of the 151-frame
-  // canvas scrub — no frame decode, no per-scroll canvas draw.
-  const inert = reduced || isMobile
+  // Only reduced-motion gets the static poster. Mobile keeps the scroll-scrub but
+  // runs a lighter version (fewer frames + lower canvas resolution) so it animates
+  // without the original decode/draw cost. Desktop is unchanged.
+  const inert = reduced
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -39,7 +40,10 @@ export function ContentScrollBackground() {
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx) return
 
-    const dpr = Math.min(window.devicePixelRatio || 1, 2)
+    // Mobile: cap pixel ratio at 1 (phones are 2–3×) and load every Nth frame to
+    // cut decode + per-scroll draw cost. Desktop: full ratio + every frame.
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 2)
+    const stride = isMobile ? 4 : 1
     let lastDrawn = -1
 
     // Scroll metrics are cached and recomputed on resize, not read per frame
@@ -110,12 +114,17 @@ export function ContentScrollBackground() {
       lastDrawn = -1
       render()
     }
-    for (let i = 0; i < FRAME_COUNT; i++) {
+    // Load every `stride`-th frame (always including the last). pickImage() falls
+    // back to the nearest loaded frame, so a sparse set just yields a coarser scrub.
+    const load = (i: number) => {
+      if (imagesRef.current[i]) return
       const img = new Image()
       img.addEventListener('load', onLoad, { once: true })
       img.src = frameUrl(i)
       imagesRef.current[i] = img
     }
+    for (let i = 0; i < FRAME_COUNT; i += stride) load(i)
+    load(FRAME_COUNT - 1)
 
     resize()
     window.addEventListener('resize', resize)
@@ -137,7 +146,7 @@ export function ContentScrollBackground() {
       window.removeEventListener('resize', resize)
       window.removeEventListener('scroll', onScroll)
     }
-  }, [inert])
+  }, [inert, isMobile])
 
   if (inert) {
     return (
