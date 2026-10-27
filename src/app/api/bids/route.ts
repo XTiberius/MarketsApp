@@ -32,6 +32,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'listing_id and amount are required' }, { status: 400 })
   }
 
+  // Checked before the end-user and amount rules on purpose: whether a listing
+  // takes bids is a fact about the listing, so a closed one says so whatever
+  // else is wrong with the request.
+  const { data: listing, error: listingError } = await supabase
+    .from('listings')
+    .select('minimum_investment, status')
+    .eq('id', listing_id)
+    .single()
+
+  if (listingError || !listing) {
+    return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
+  }
+
+  if (listing.status !== 'published') {
+    return NextResponse.json(
+      { error: 'This listing is closed to new bids.' },
+      { status: 400 }
+    )
+  }
+
   if (investor_kind !== 'individual' && investor_kind !== 'entity') {
     return NextResponse.json({ error: 'A valid end-user is required.' }, { status: 400 })
   }
@@ -69,23 +89,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
-  }
-
-  const { data: listing, error: listingError } = await supabase
-    .from('listings')
-    .select('minimum_investment, status')
-    .eq('id', listing_id)
-    .single()
-
-  if (listingError || !listing) {
-    return NextResponse.json({ error: 'Listing not found' }, { status: 404 })
-  }
-
-  if (listing.status !== 'published') {
-    return NextResponse.json(
-      { error: 'This listing is closed to new bids.' },
-      { status: 400 }
-    )
   }
 
   const minBid = listing.minimum_investment ?? DEFAULT_MIN_BID
