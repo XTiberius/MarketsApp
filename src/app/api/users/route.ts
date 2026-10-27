@@ -19,6 +19,47 @@ export async function PATCH(req: NextRequest) {
     admin_notes?: string
   }
 
+  // An account must hold the KYC records its account type implies before it can
+  // be approved. Approving an empty account produced a user that reads as
+  // verified while having no party to bid as — see lib/end-users.ts.
+  if (kyc_status === 'approved') {
+    const [target, individual, entities] = await Promise.all([
+      supabase.from('users').select('account_type').eq('id', user_id).maybeSingle(),
+      supabase.from('kyc_individual').select('id').eq('user_id', user_id).maybeSingle(),
+      supabase.from('kyc_entity').select('id').eq('user_id', user_id).limit(1),
+    ])
+
+    if (!target.data) {
+      return NextResponse.json({ error: 'That user does not exist.' }, { status: 404 })
+    }
+
+    const accountType = target.data.account_type
+    const hasIndividual = !!individual.data
+    const hasEntity = (entities.data?.length ?? 0) > 0
+
+    const missing: string[] = []
+    if ((accountType === 'individual' || accountType === 'both') && !hasIndividual) {
+      missing.push('individual KYC details')
+    }
+    if ((accountType === 'entity' || accountType === 'both') && !hasEntity) {
+      missing.push('at least one entity')
+    }
+    // Accounts predating account_type (018) have none; require any submission.
+    if (!accountType && !hasIndividual && !hasEntity) {
+      missing.push('a KYC submission')
+    }
+
+    if (missing.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Cannot approve this account: it has no ${missing.join(' and no ')}. ` +
+            'Ask the holder to complete KYC first.',
+        },
+        { status: 400 }
+      )
+    }
+  }
+
   const { error } = await supabase
     .from('users')
     .update({ kyc_status })

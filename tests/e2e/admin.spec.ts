@@ -185,6 +185,48 @@ test('/admin/users approves an applicant', async ({ page }) => {
   await expect(page.getByText('approved').first()).toBeVisible()
 })
 
+// An account with no KYC record of any kind must not be approvable: that state
+// produced a user who read as verified but had no party to bid as.
+test('/admin/users refuses to approve an account with no KYC record', async ({ page }) => {
+  console.log('[playwright admin] running with seeded admin storageState')
+  await resetKycFixture()
+
+  const supabase = adminClient()
+  const { investorId } = await fixtureIds(supabase)
+  await supabase.from('kyc_individual').delete().eq('user_id', investorId)
+  await supabase.from('kyc_entity').delete().eq('user_id', investorId)
+
+  try {
+    await page.goto('/admin/users')
+
+    await expect(page.getByRole('heading', { name: 'User KYC Review' })).toBeVisible()
+    await page.getByText('e2e+investor@marketsapp.test').locator('..').locator('..').getByTestId('admin-kyc-review-toggle').click()
+    await page.getByTestId('admin-kyc-approve-button').click()
+
+    await expect(page.getByText(/Cannot approve this account/)).toBeVisible()
+
+    // The status must not have moved.
+    const { data } = await supabase.from('users').select('kyc_status').eq('id', investorId).single()
+    expect(data?.kyc_status).toBe('pending')
+  } finally {
+    const { error } = await supabase
+      .from('kyc_individual')
+      .upsert({
+        user_id: investorId,
+        first_name: 'E2E',
+        last_name: 'Applicant',
+        dob: '1990-01-01',
+        address: '123 Test Market Street',
+        phone: '555-0100',
+        occupation: 'Investor',
+        accredited_investor: true,
+        submitted_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+
+    if (error) throw error
+  }
+})
+
 test('/admin/users requires a rejection reason before rejecting', async ({ page }) => {
   console.log('[playwright admin] running with seeded admin storageState')
   await resetKycFixture()
