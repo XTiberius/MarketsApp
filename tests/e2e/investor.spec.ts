@@ -162,6 +162,100 @@ test('places bids with minimum validation and success state', async ({ page }) =
   await expect(page.getByText('Bid placed!')).toBeVisible()
 })
 
+// Put the fixture's individual KYC row back. The two end-user specs below strip the
+// account's bidding parties, and every other spec here expects the seeded investor.
+async function restoreIndividualKyc(supabase: SupabaseClient, investorId: string) {
+  const { error } = await supabase
+    .from('kyc_individual')
+    .upsert({
+      user_id: investorId,
+      first_name: 'E2E',
+      last_name: 'Applicant',
+      dob: '1990-01-01',
+      address: '123 Test Market Street',
+      phone: '555-0100',
+      occupation: 'Investor',
+      accredited_investor: true,
+      submitted_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' })
+
+  if (error) throw error
+}
+
+// An admin can approve an account through /api/users without a kyc_individual row
+// ever being written. The holder is still an approved individual, so they must be
+// offered as a bidding party — gating that option on the row's existence left this
+// account with an empty selector and no way to bid.
+test('an approved individual with no KYC row can bid as themselves', async ({ page }) => {
+  const supabase = adminClient()
+  const { investorId, listingId } = await fixtureIds(supabase)
+  await resetInvestorFixture({ signature: 'present', bid: 'absent' })
+
+  await supabase.from('kyc_individual').delete().eq('user_id', investorId)
+  await supabase.from('kyc_entity').delete().eq('user_id', investorId)
+
+  try {
+    await page.goto(`/listings/${listingId}`)
+    await page.getByTestId('bid-open-button').click()
+    await expect(page.getByTestId('bid-modal')).toBeVisible()
+
+    // The selector renders and is preselected on the sole party.
+    await expect(page.getByTestId('bid-end-user')).toBeVisible()
+    await expect(page.getByTestId('bid-end-user')).toContainText('Individual')
+
+    await page.getByLabel('Bid Amount (USD)').fill('60000')
+    await page.getByTestId('bid-submit-button').click()
+    await expect(page.getByText('Bid placed!')).toBeVisible()
+  } finally {
+    await restoreIndividualKyc(supabase, investorId)
+  }
+})
+
+// With no bidding party at all, submitting used to fail validation on a selector the
+// modal never rendered. The modal must explain what is missing instead.
+test('a bid with no eligible end-user offers a way forward, not a dead end', async ({ page }) => {
+  const supabase = adminClient()
+  const { investorId, listingId } = await fixtureIds(supabase)
+  await resetInvestorFixture({ signature: 'present', bid: 'absent' })
+
+  // Strip every bidding party: no individual KYC, no entities, not approved.
+  await supabase.from('kyc_individual').delete().eq('user_id', investorId)
+  await supabase.from('kyc_entity').delete().eq('user_id', investorId)
+  {
+    const { error } = await supabase
+      .from('users')
+      .update({ kyc_status: 'pending' })
+      .eq('id', investorId)
+
+    if (error) throw error
+  }
+
+  try {
+    await page.goto(`/listings/${listingId}`)
+    await page.getByTestId('bid-open-button').click()
+    await expect(page.getByTestId('bid-modal')).toBeVisible()
+
+    await expect(page.getByTestId('bid-no-end-users')).toBeVisible()
+    await expect(page.getByText(/Complete KYC or add an entity before bidding/)).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Complete KYC' })).toHaveAttribute(
+      'href',
+      '/auth/kyc'
+    )
+
+    // No amount field and no submit button, so there is nothing to dead-end on.
+    await expect(page.getByTestId('bid-submit-button')).toHaveCount(0)
+    await expect(page.getByText('Please choose who this bid is from.')).toHaveCount(0)
+  } finally {
+    const { error } = await supabase
+      .from('users')
+      .update({ kyc_status: 'approved' })
+      .eq('id', investorId)
+
+    if (error) throw error
+    await restoreIndividualKyc(supabase, investorId)
+  }
+})
+
 // Seed an invested position with everything the portfolio module embeds, then verify it renders.
 async function seedInvestedPosition() {
   const supabase = adminClient()

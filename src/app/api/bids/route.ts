@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { individualIsEligible } from '@/lib/end-users'
 
 const DEFAULT_MIN_BID = 50_000
 
@@ -35,16 +36,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'A valid end-user is required.' }, { status: 400 })
   }
 
-  // Validate the chosen end-user belongs to this account.
+  // Validate the chosen end-user belongs to this account. The individual holder
+  // is judged by the same rule the bid modal offers them under (lib/end-users),
+  // so the UI can never offer a party the API then refuses.
   if (investor_kind === 'individual') {
-    const { data: ind } = await supabase
-      .from('kyc_individual')
-      .select('id')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    if (!ind) {
+    const [profile, ind] = await Promise.all([
+      supabase.from('users').select('kyc_status, account_type').eq('id', user.id).maybeSingle(),
+      supabase.from('kyc_individual').select('id').eq('user_id', user.id).maybeSingle(),
+    ])
+    if (!profile.data) {
+      return NextResponse.json({ error: 'No profile found for your account.' }, { status: 400 })
+    }
+    if (!individualIsEligible(profile.data, !!ind.data)) {
       return NextResponse.json(
-        { error: 'No individual profile found for your account.' },
+        { error: 'Your individual profile is not verified for bidding.' },
         { status: 400 }
       )
     }
