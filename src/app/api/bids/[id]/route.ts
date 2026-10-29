@@ -35,7 +35,7 @@ const STATUS_MESSAGES: Record<
     heading: 'Notice of Intended Investment received',
     lines: (c) => [
       `Your executed Notice of Intended Investment for <strong>${c}</strong> has been received.`,
-      `Your bid is now <strong>pending acceptance</strong> by the IONIC desk.`,
+      `Your bid is now <strong>pending acceptance</strong> by the Monroe Markets desk.`,
     ],
   },
   accepted: {
