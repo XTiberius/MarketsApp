@@ -11,7 +11,7 @@ import {
 
 export const runtime = 'edge'
 
-export const alt = 'Monroe Markets - Invest beyond the public markets'
+export const alt = 'Monroe Markets - Private capital evolved'
 
 export const size = {
   width: 1200,
@@ -25,7 +25,6 @@ export const contentType = 'image/png'
 const CLARET = '#A8405F'
 const TINT = '#D98AA3'
 const IVORY = '#F3F0EA'
-const SLATE = '#AAA5B2'
 
 const MARK_HEIGHT = 96
 const WORDMARK_HEIGHT = 40
@@ -110,17 +109,7 @@ export default function Image() {
             fontWeight: 600,
           }}
         >
-          Invest beyond the public markets
-        </div>
-        <div
-          style={{
-            marginTop: 20,
-            fontSize: 28,
-            lineHeight: 1.2,
-            color: SLATE,
-          }}
-        >
-          Accredited investors only
+          Private capital evolved
         </div>
       </div>
     ),

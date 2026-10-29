@@ -16,7 +16,7 @@ const SITE_URL = 'https://www.monroemarkets.com'
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Monroe Markets — Venture Marketplace',
+    default: 'Monroe Markets — Be your own VC',
     template: '%s · Monroe Markets',
   },
   description: 'Discover, bid on, and invest in individual startup fund listings. Accredited investors only.',
@@ -25,12 +25,12 @@ export const metadata: Metadata = {
     type: 'website',
     siteName: 'Monroe Markets',
     url: SITE_URL,
-    title: 'Monroe Markets — Venture Marketplace',
+    title: 'Monroe Markets — Be your own VC',
     description: 'Discover, bid on, and invest in individual startup fund listings. Accredited investors only.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Monroe Markets — Venture Marketplace',
+    title: 'Monroe Markets — Be your own VC',
     description: 'Discover, bid on, and invest in individual startup fund listings.',
   },
 }
