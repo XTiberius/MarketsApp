@@ -2,7 +2,7 @@
 
 Outstanding work that is **not yet done**. Resume context for a future Claude Code
 session: read this file, skim recent `git log` on `main`/`feat/platform-v1`, and the
-relevant files named below. The app is live at **https://www.ionicmarkets.com**
+relevant files named below. The app is live at **https://www.monroemarkets.com**
 (Vercel project `davidrashid/markets-app`, GitHub `XTiberius/MarketsApp`, production
 branch = `main`). The remote Supabase is shared across all environments; apply DB
 changes with `supabase db push` (linked CLI; see the `supabase-sql-apply` skill).

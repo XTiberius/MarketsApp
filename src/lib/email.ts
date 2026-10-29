@@ -7,7 +7,7 @@ import { createServiceClient } from '@/lib/supabase-admin'
  * configured. Status-update / document events notify the investor + ALL admins.
  */
 
-const FROM = process.env.EMAIL_FROM ?? 'IONIC Markets <updates@ionicmarkets.com>'
+const FROM = process.env.EMAIL_FROM ?? 'IONIC Markets <updates@monroemarkets.com>'
 
 function resend(): Resend | null {
   const key = process.env.RESEND_API_KEY

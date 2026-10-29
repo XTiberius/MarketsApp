@@ -11,7 +11,7 @@ const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
 const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space-grotesk' })
 
-const SITE_URL = 'https://www.ionicmarkets.com'
+const SITE_URL = 'https://www.monroemarkets.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
