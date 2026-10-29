@@ -13,7 +13,7 @@ export default function NotFound() {
         </p>
         <div className="mt-6 flex justify-center">
           <Button asChild>
-            <Link href="/">Back to IONIC</Link>
+            <Link href="/">Back to Monroe Markets</Link>
           </Button>
         </div>
       </GlassCard>

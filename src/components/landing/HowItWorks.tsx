@@ -26,7 +26,7 @@ const STEPS = [
   {
     n: '04',
     title: 'Admin review',
-    body: 'The IONIC desk reviews, confirms, and clears your bid.',
+    body: 'The Monroe Markets desk reviews, confirms, and clears your bid.',
     badge: { kind: 'bidStatus', value: 'accepted' },
   },
   {

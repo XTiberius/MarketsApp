@@ -6,7 +6,7 @@ import { expect, test } from '@playwright/test'
 test('landing loads for signed-out visitors', async ({ page }) => {
   await page.goto('/')
 
-  await expect(page.getByRole('link', { name: 'IONIC home' }).first()).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Monroe Markets home' }).first()).toBeVisible()
   await expect(page.getByRole('link', { name: 'Get started' }).first()).toBeVisible()
 })
 

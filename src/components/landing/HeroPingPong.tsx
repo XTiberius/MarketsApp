@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from 'react'
 import { Play } from 'lucide-react'
 import { useScroll, useMotionValueEvent, useReducedMotion } from 'framer-motion'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { Wordmark } from '@/components/Logo'
 
 const MOTTO = 'Your guide to private markets'
 
 /**
- * Top hero: a seamless ping-pong video auto-loops (no scroll needed); the IONIC
- * wordmark settles in on load. As you scroll through the tall section, the video
+ * Top hero: a seamless ping-pong video auto-loops (no scroll needed); the Monroe
+ * Markets wordmark settles in on load. As you scroll through the tall section, the video
  * blurs and a dark gradient fills from the bottom until the viewport is fully
  * solid --background — the separator before the scroll-scrub content begins.
  *
@@ -109,12 +110,12 @@ export function HeroPingPong() {
           </button>
         )}
 
-        {/* IONIC intro text (settles in on load, fades out on scroll) */}
+        {/* Monroe Markets intro (settles in on load, fades out on scroll) */}
         <div ref={textRef} className="absolute inset-0 z-10 flex flex-col items-center justify-center px-4 text-center">
-          <h1 className="font-display text-6xl font-semibold tracking-tight sm:text-8xl">
-            <span className="ionic-settle inline-block">IONIC</span>
+          <h1 className="flex justify-center">
+            <Wordmark role="img" aria-label="Monroe Markets" className="brand-settle h-auto w-[min(88vw,720px)] text-foreground" />
           </h1>
-          <p className="ionic-settle mt-5 font-display text-xl text-foreground/85 sm:text-2xl">{MOTTO}</p>
+          <p className="brand-settle mt-7 font-display text-xl text-foreground/85 sm:mt-9 sm:text-2xl">{MOTTO}</p>
         </div>
 
         {/* scroll-exit: gradient fills from the bottom, then a full solid veil */}

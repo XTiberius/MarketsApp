@@ -1,8 +1,17 @@
 import { ImageResponse } from 'next/og'
+import {
+  MARK_GRADIENTS,
+  MARK_PATHS,
+  MARK_RATIO,
+  MARK_VIEWBOX,
+  WORDMARK_GLYPHS,
+  WORDMARK_RATIO,
+  WORDMARK_VIEWBOX,
+} from '@/lib/brand'
 
 export const runtime = 'edge'
 
-export const alt = 'IONIC - Invest beyond the public markets'
+export const alt = 'Monroe Markets - Invest beyond the public markets'
 
 export const size = {
   width: 1200,
@@ -10,6 +19,16 @@ export const size = {
 }
 
 export const contentType = 'image/png'
+
+// Satori renders inline <svg> as an image, so the mark and wordmark are drawn
+// from their raw paths (no <use>, no web fonts). Dark-surface variant: claret → tint.
+const CLARET = '#A8405F'
+const TINT = '#D98AA3'
+const IVORY = '#F3F0EA'
+const SLATE = '#AAA5B2'
+
+const MARK_HEIGHT = 96
+const WORDMARK_HEIGHT = 40
 
 export default function Image() {
   return new ImageResponse(
@@ -22,39 +41,83 @@ export default function Image() {
           flexDirection: 'column',
           justifyContent: 'center',
           padding: '84px 96px',
-          color: '#ffffff',
-          background:
-            'linear-gradient(135deg, #0b0814 0%, #17102b 42%, #4c1d95 72%, #7c4dff 100%)',
+          color: IVORY,
+          background: 'linear-gradient(135deg, #0A0710 0%, #151020 100%)',
           fontFamily:
             '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
         }}
       >
-        <div
-          style={{
-            fontSize: 132,
-            lineHeight: 0.9,
-            fontWeight: 800,
-            letterSpacing: 0,
-          }}
+        <svg
+          viewBox={MARK_VIEWBOX}
+          width={Math.round(MARK_HEIGHT * MARK_RATIO)}
+          height={MARK_HEIGHT}
         >
-          IONIC
-        </div>
+          <defs>
+            <linearGradient
+              id="og-a"
+              x1={MARK_GRADIENTS.barA[0]}
+              x2={MARK_GRADIENTS.barA[1]}
+              y1="0"
+              y2="0"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0.05" stopColor={CLARET} />
+              <stop offset="1" stopColor={CLARET} stopOpacity="0" />
+            </linearGradient>
+            <linearGradient
+              id="og-b"
+              x1={MARK_GRADIENTS.barB[0]}
+              x2={MARK_GRADIENTS.barB[1]}
+              y1="0"
+              y2="0"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0.05" stopColor={CLARET} />
+              <stop offset="1" stopColor={CLARET} stopOpacity="0" />
+            </linearGradient>
+            <linearGradient
+              id="og-c"
+              x1={MARK_GRADIENTS.body[0]}
+              x2={MARK_GRADIENTS.body[1]}
+              y1="0"
+              y2="0"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0" stopColor={CLARET} />
+              <stop offset="1" stopColor={TINT} />
+            </linearGradient>
+          </defs>
+          <path d={MARK_PATHS.barA} fill="url(#og-a)" />
+          <path d={MARK_PATHS.hook} fill={CLARET} />
+          <path d={MARK_PATHS.barB} fill="url(#og-b)" />
+          <path d={MARK_PATHS.body} fill="url(#og-c)" />
+        </svg>
+        <svg
+          viewBox={WORDMARK_VIEWBOX}
+          width={Math.round(WORDMARK_HEIGHT * WORDMARK_RATIO)}
+          height={WORDMARK_HEIGHT}
+          style={{ marginTop: 40 }}
+        >
+          {WORDMARK_GLYPHS.map(({ x, d }) => (
+            <path key={x} d={d} fill={IVORY} transform={`translate(${x},0)`} />
+          ))}
+        </svg>
         <div
           style={{
-            marginTop: 42,
+            marginTop: 56,
             fontSize: 48,
             lineHeight: 1.1,
-            fontWeight: 700,
+            fontWeight: 600,
           }}
         >
           Invest beyond the public markets
         </div>
         <div
           style={{
-            marginTop: 24,
+            marginTop: 20,
             fontSize: 28,
             lineHeight: 1.2,
-            color: 'rgba(255,255,255,0.78)',
+            color: SLATE,
           }}
         >
           Accredited investors only

@@ -9,12 +9,12 @@ const CARDS = [
     tag: 'Direct',
     tone: 'typePrimary' as const,
     title: 'Direct portfolio companies',
-    body: 'Lead and follow-on allocations into operating companies, sourced through the network and screened by the IONIC desk.',
+    body: 'Lead and follow-on allocations into operating companies, sourced through the network and screened by the Monroe Markets desk.',
   },
   {
     tag: 'Managed',
     tone: 'typeSecondary' as const,
-    title: 'IONIC Network vehicles',
+    title: 'Monroe Network vehicles',
     body: 'Professionally managed funds and SPVs that pool member capital into leading companies, funds, and thesis-driven mandates.',
   },
 ]
@@ -24,7 +24,7 @@ export function NetworkSection() {
     <section className="relative z-10 mx-auto max-w-6xl px-4 py-24 sm:py-32">
       <Reveal>
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">
-          The IONIC Network
+          The Monroe Network
         </p>
         <h2 className="mt-3 font-display text-3xl font-semibold tracking-tight sm:text-5xl">
           Credibility, by design

@@ -8,7 +8,7 @@ const CARDS = [
   {
     icon: Gem,
     title: 'Exclusive deals',
-    body: 'Primary and secondary opportunities across direct portfolio companies and IONIC Network managed vehicles — surfaced only to verified members.',
+    body: 'Primary and secondary opportunities across direct portfolio companies and Monroe Network managed vehicles — surfaced only to verified members.',
   },
   {
     icon: BadgeCheck,
@@ -18,7 +18,7 @@ const CARDS = [
   {
     icon: Handshake,
     title: 'White-glove execution',
-    body: 'NDA, bidding, admin review, allocation and documents — handled end to end by the IONIC desk.',
+    body: 'NDA, bidding, admin review, allocation and documents — handled end to end by the Monroe Markets desk.',
   },
 ]
 
@@ -26,7 +26,7 @@ export function WhySection() {
   return (
     <section className="relative z-10 mx-auto max-w-6xl px-4 py-24 sm:py-32">
       <Reveal>
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Why IONIC</p>
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">Why Monroe Markets</p>
         <h2 className="mt-3 max-w-2xl font-display text-3xl font-semibold tracking-tight sm:text-5xl">
           Built for conviction at scale
         </h2>

@@ -29,6 +29,9 @@
   --border: 220 14% 86%;
   --input: 220 14% 88%;
   --ring: 224 45% 58%;
+  /* brand mark gradient stops (light surface: maroon → claret) */
+  --brand-mark: #7A1C3A;
+  --brand-mark-tint: #A8405F;
 
   /* color-coded status palette (legible on light glass) */
   --type-primary: 224 45% 52%;   /* listing primary  → cool accent */
@@ -80,6 +83,9 @@
   --border: 220 14% 22%;
   --input: 220 14% 20%;
   --ring: 224 45% 70%;
+  /* brand mark gradient stops (dark surface: claret → tint) */
+  --brand-mark: #A8405F;
+  --brand-mark-tint: #D98AA3;
 
   /* color-coded status palette (vibrant on dark glass) */
   --type-primary: 224 45% 72%;
@@ -164,7 +170,7 @@
 /* Hero wordmark settle-in: resting state is VISIBLE; @starting-style provides
    the entry state and the transition animates between them on first paint.
    Robust — if the transition never runs, the text shows its visible resting state. */
-.ionic-settle {
+.brand-settle {
   opacity: 1;
   filter: blur(0);
   letter-spacing: 0;
@@ -176,7 +182,7 @@
     transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @starting-style {
-  .ionic-settle {
+  .brand-settle {
     opacity: 0;
     filter: blur(14px);
     letter-spacing: 0.32em;

@@ -16,21 +16,21 @@ const SITE_URL = 'https://www.monroemarkets.com'
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'IONIC — Venture Marketplace',
-    template: '%s · IONIC',
+    default: 'Monroe Markets — Venture Marketplace',
+    template: '%s · Monroe Markets',
   },
   description: 'Discover, bid on, and invest in individual startup fund listings. Accredited investors only.',
-  applicationName: 'IONIC',
+  applicationName: 'Monroe Markets',
   openGraph: {
     type: 'website',
-    siteName: 'IONIC',
+    siteName: 'Monroe Markets',
     url: SITE_URL,
-    title: 'IONIC — Venture Marketplace',
+    title: 'Monroe Markets — Venture Marketplace',
     description: 'Discover, bid on, and invest in individual startup fund listings. Accredited investors only.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'IONIC — Venture Marketplace',
+    title: 'Monroe Markets — Venture Marketplace',
     description: 'Discover, bid on, and invest in individual startup fund listings.',
   },
 }

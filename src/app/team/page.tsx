@@ -4,8 +4,8 @@ import { TeamBust } from '@/components/team/TeamBust'
 
 // Public page — no auth gate, so any visitor can reach /team.
 export const metadata: Metadata = {
-  title: 'Team — IONIC',
-  description: 'The people behind IONIC.',
+  title: 'Team — Monroe Markets',
+  description: 'The people behind Monroe Markets.',
 }
 
 export default function TeamPage() {
@@ -14,7 +14,7 @@ export default function TeamPage() {
       <header className="max-w-2xl">
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary">The team</p>
         <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight sm:text-5xl">
-          The people behind IONIC
+          The people behind Monroe Markets
         </h1>
       </header>
 

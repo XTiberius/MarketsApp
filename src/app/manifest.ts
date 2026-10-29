@@ -17,8 +17,8 @@ const icons = [
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'IONIC',
-    short_name: 'IONIC',
+    name: 'Monroe Markets',
+    short_name: 'Monroe',
     description: 'Private venture marketplace for accredited investors.',
     start_url: '/',
     display: 'standalone',

@@ -4,7 +4,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import type { NewsfeedBullet } from '@/lib/types'
 
 const DISCLOSURE =
-  'This is AI generated and is subject to make mistakes. This is not investment advice and user understands Ionic Markets advises to do your own research and Ionic Markets is not responsible for investment decisions made as a result of this summary.'
+  'This is AI generated and is subject to make mistakes. This is not investment advice and user understands Monroe Markets advises to do your own research and Monroe Markets is not responsible for investment decisions made as a result of this summary.'
 
 // Deliberately a small, cost-efficient model (not the strongest) with web search —
 // this is grunt summarization, so we keep token spend low.

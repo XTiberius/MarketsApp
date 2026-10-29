@@ -43,7 +43,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center text-center">
           <Logo href={undefined} size={40} />
           <h1 className="mt-6 font-display text-2xl font-semibold text-foreground">
-            Sign in to IONIC
+            Sign in to Monroe Markets
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
             We&apos;ll send a 6-digit code to your email
