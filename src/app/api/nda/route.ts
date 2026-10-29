@@ -9,6 +9,17 @@ export async function POST(req: NextRequest) {
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  // Signing an NDA is an investor action: the account must be KYC-approved.
+  // The page gate (requireKycApproved) covers the UI; this covers the API.
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role, kyc_status')
+    .eq('id', user.id)
+    .maybeSingle()
+  if (profile?.role !== 'admin' && profile?.kyc_status !== 'approved') {
+    return NextResponse.json({ error: 'KYC approval is required.' }, { status: 403 })
+  }
+
   const { listing_id, signature_image } = await req.json().catch(() => ({}))
 
   if (!listing_id || !signature_image) {

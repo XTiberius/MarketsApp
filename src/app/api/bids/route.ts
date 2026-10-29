@@ -26,6 +26,21 @@ export async function POST(req: NextRequest) {
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const { data: profile } = await supabase
+    .from('users')
+    .select('role, kyc_status, account_type')
+    .eq('id', user.id)
+    .maybeSingle()
+  if (!profile) {
+    return NextResponse.json({ error: 'No profile found for your account.' }, { status: 400 })
+  }
+
+  // Bidding is an investor action: the account must be KYC-approved.
+  // The page gate (requireKycApproved) covers the UI; this covers the API.
+  if (profile.role !== 'admin' && profile.kyc_status !== 'approved') {
+    return NextResponse.json({ error: 'KYC approval is required.' }, { status: 403 })
+  }
+
   const { listing_id, amount, investor_kind, entity_id } = await req.json()
 
   if (!listing_id || !amount) {
@@ -60,14 +75,12 @@ export async function POST(req: NextRequest) {
   // is judged by the same rule the bid modal offers them under (lib/end-users),
   // so the UI can never offer a party the API then refuses.
   if (investor_kind === 'individual') {
-    const [profile, ind] = await Promise.all([
-      supabase.from('users').select('kyc_status, account_type').eq('id', user.id).maybeSingle(),
-      supabase.from('kyc_individual').select('id').eq('user_id', user.id).maybeSingle(),
-    ])
-    if (!profile.data) {
-      return NextResponse.json({ error: 'No profile found for your account.' }, { status: 400 })
-    }
-    if (!individualIsEligible(profile.data, !!ind.data)) {
+    const { data: ind } = await supabase
+      .from('kyc_individual')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (!individualIsEligible(profile, !!ind)) {
       return NextResponse.json(
         { error: 'Your individual profile is not verified for bidding.' },
         { status: 400 }

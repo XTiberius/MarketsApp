@@ -49,8 +49,11 @@ export async function requireAdmin(): Promise<User> {
   return user
 }
 
+// The investor gate: everything past sign-in and the profile step requires an
+// approved KYC application. Admins review applications, so they are exempt.
 export async function requireKycApproved(): Promise<User> {
   const user = await requireAuth()
+  if (user.role === 'admin') return user
   if (user.kyc_status !== 'approved') redirect('/auth/kyc')
   return user
 }

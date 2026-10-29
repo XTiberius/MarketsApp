@@ -71,23 +71,40 @@ async function resetBidFixture() {
   if (error) throw error
 }
 
+// The seeded investor's individual KYC row, as global-setup writes it. Upserted
+// rather than updated so an investor spec that aborted before restoring it
+// cannot leave the admin specs with nothing to review.
+async function ensureIndividualKyc(supabase: SupabaseClient, investorId: string) {
+  const { error } = await supabase
+    .from('kyc_individual')
+    .upsert({
+      user_id: investorId,
+      first_name: 'E2E',
+      last_name: 'Applicant',
+      dob: '1990-01-01',
+      address: '123 Test Market Street',
+      phone: '555-0100',
+      occupation: 'Investor',
+      accredited_investor: true,
+      submitted_at: new Date().toISOString(),
+      reviewed_at: null,
+      admin_notes: null,
+    }, { onConflict: 'user_id' })
+
+  if (error) throw error
+}
+
 async function resetKycFixture() {
   const supabase = adminClient()
   const { investorId } = await fixtureIds(supabase)
 
-  const [{ error: userError }, { error: kycError }] = await Promise.all([
-    supabase
-      .from('users')
-      .update({ kyc_status: 'pending' })
-      .eq('id', investorId),
-    supabase
-      .from('kyc_individual')
-      .update({ reviewed_at: null, admin_notes: null })
-      .eq('user_id', investorId),
-  ])
+  const { error: userError } = await supabase
+    .from('users')
+    .update({ kyc_status: 'pending' })
+    .eq('id', investorId)
 
   if (userError) throw userError
-  if (kycError) throw kycError
+  await ensureIndividualKyc(supabase, investorId)
 }
 
 async function setListingFixture(patch: Record<string, unknown>) {
@@ -186,13 +203,15 @@ test('/admin/users approves an applicant', async ({ page }) => {
 })
 
 // An account with no KYC record of any kind must not be approvable: that state
-// produced a user who read as verified but had no party to bid as.
-test('/admin/users refuses to approve an account with no KYC record', async ({ page }) => {
+// produced a user who read as verified but had no party to bid as. The queue
+// shows it as not submitted with nothing to click, and the API is the backstop.
+test('/admin/users shows an account with no KYC record as not submitted and refuses to approve it', async ({ page }) => {
   console.log('[playwright admin] running with seeded admin storageState')
   await resetKycFixture()
 
   const supabase = adminClient()
   const { investorId } = await fixtureIds(supabase)
+  await supabase.from('users').update({ account_type: null }).eq('id', investorId)
   await supabase.from('kyc_individual').delete().eq('user_id', investorId)
   await supabase.from('kyc_entity').delete().eq('user_id', investorId)
 
@@ -200,30 +219,23 @@ test('/admin/users refuses to approve an account with no KYC record', async ({ p
     await page.goto('/admin/users')
 
     await expect(page.getByRole('heading', { name: 'User KYC Review' })).toBeVisible()
-    await page.getByText('e2e+investor@marketsapp.test').locator('..').locator('..').getByTestId('admin-kyc-review-toggle').click()
-    await page.getByTestId('admin-kyc-approve-button').click()
+    const row = page.getByText('e2e+investor@marketsapp.test').locator('..').locator('..')
+    await expect(row.getByTestId('admin-kyc-not-submitted')).toBeVisible()
+    await row.getByTestId('admin-kyc-review-toggle').click()
+    await expect(page.getByText(/No KYC application has been submitted yet/)).toBeVisible()
+    await expect(page.getByTestId('admin-kyc-approve-button')).toHaveCount(0)
 
-    await expect(page.getByText(/Cannot approve this account/)).toBeVisible()
+    const res = await page.request.patch('/api/users', {
+      data: { user_id: investorId, kyc_status: 'approved' },
+    })
+    expect(res.status()).toBe(400)
+    expect(((await res.json())?.error ?? '')).toMatch(/it has no KYC submission/)
 
     // The status must not have moved.
     const { data } = await supabase.from('users').select('kyc_status').eq('id', investorId).single()
     expect(data?.kyc_status).toBe('pending')
   } finally {
-    const { error } = await supabase
-      .from('kyc_individual')
-      .upsert({
-        user_id: investorId,
-        first_name: 'E2E',
-        last_name: 'Applicant',
-        dob: '1990-01-01',
-        address: '123 Test Market Street',
-        phone: '555-0100',
-        occupation: 'Investor',
-        accredited_investor: true,
-        submitted_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
-
-    if (error) throw error
+    await ensureIndividualKyc(supabase, investorId)
   }
 })
 

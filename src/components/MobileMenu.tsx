@@ -5,7 +5,16 @@ import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 import { SignOutButton } from './SignOutButton'
 
-export function MobileMenu({ isSignedIn, isAdmin }: { isSignedIn: boolean; isAdmin: boolean }) {
+export function MobileMenu({
+  isSignedIn,
+  isAdmin,
+  canInvest,
+}: {
+  isSignedIn: boolean
+  isAdmin: boolean
+  /** KYC-approved (or admin): the investor pages are reachable. */
+  canInvest: boolean
+}) {
   const [open, setOpen] = useState(false)
 
   return (
@@ -28,12 +37,18 @@ export function MobileMenu({ isSignedIn, isAdmin }: { isSignedIn: boolean; isAdm
           <Link href="/team" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Team</Link>
           {isSignedIn ? (
             <>
-              <Link href="/listings" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Listings</Link>
+              {canInvest && (
+                <Link href="/listings" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Listings</Link>
+              )}
               {isAdmin && (
                 <Link href="/admin/dashboard" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Admin</Link>
               )}
-              <Link href="/bids" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">My Bids</Link>
-              <Link href="/portfolio" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Portfolio</Link>
+              {canInvest && (
+                <>
+                  <Link href="/bids" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">My Bids</Link>
+                  <Link href="/portfolio" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Portfolio</Link>
+                </>
+              )}
               <Link href="/profile" className="rounded-lg px-3 py-2 text-sm hover:bg-muted/60">Profile</Link>
               <div className="px-3 py-2"><SignOutButton /></div>
             </>

@@ -158,6 +158,8 @@ export default async function ProfilePage() {
           <KYCForm
             userId={user.id}
             kycStatus={user.kyc_status}
+            submitted={false}
+            email={user.email}
             firstName={user.first_name}
             lastName={user.last_name}
           />

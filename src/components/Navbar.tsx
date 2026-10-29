@@ -13,6 +13,9 @@ const navLink =
 export async function Navbar() {
   const user = await getServerUser()
   const isAdmin = user?.role === 'admin'
+  // Investor pages are gated on KYC approval (requireKycApproved); don't link to
+  // them from an account that would only be redirected back to the application.
+  const canInvest = isAdmin || user?.kyc_status === 'approved'
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-[hsl(var(--background)/0.6)] backdrop-blur-xl">
@@ -23,7 +26,7 @@ export async function Navbar() {
           <Link href="/team" className={navLink}>
             Team
           </Link>
-          {user && (
+          {canInvest && (
             <Link href="/listings" className={navLink}>
               Listings
             </Link>
@@ -33,12 +36,12 @@ export async function Navbar() {
               Admin
             </Link>
           )}
-          {user && (
+          {canInvest && (
             <Link href="/bids" className={navLink}>
               My Bids
             </Link>
           )}
-          {user && (
+          {canInvest && (
             <Link href="/portfolio" className={navLink}>
               Portfolio
             </Link>
@@ -70,7 +73,7 @@ export async function Navbar() {
               </Button>
             </>
           )}
-          <MobileMenu isSignedIn={!!user} isAdmin={isAdmin} />
+          <MobileMenu isSignedIn={!!user} isAdmin={isAdmin} canInvest={canInvest} />
         </div>
       </nav>
     </header>

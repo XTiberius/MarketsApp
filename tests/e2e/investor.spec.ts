@@ -212,19 +212,21 @@ test('an approved individual with no KYC row can bid as themselves', async ({ pa
 })
 
 // With no bidding party at all, submitting used to fail validation on a selector the
-// modal never rendered. The modal must explain what is missing instead.
+// modal never rendered. The modal must explain what is missing instead. Unapproved
+// accounts never reach the modal now (requireKycApproved), so the reachable case is
+// an approved entity-only account whose entities are gone.
 test('a bid with no eligible end-user offers a way forward, not a dead end', async ({ page }) => {
   const supabase = adminClient()
   const { investorId, listingId } = await fixtureIds(supabase)
   await resetInvestorFixture({ signature: 'present', bid: 'absent' })
 
-  // Strip every bidding party: no individual KYC, no entities, not approved.
+  // Strip every bidding party: entity-only account, no entities, no individual KYC.
   await supabase.from('kyc_individual').delete().eq('user_id', investorId)
   await supabase.from('kyc_entity').delete().eq('user_id', investorId)
   {
     const { error } = await supabase
       .from('users')
-      .update({ kyc_status: 'pending' })
+      .update({ kyc_status: 'approved', account_type: 'entity' })
       .eq('id', investorId)
 
     if (error) throw error
@@ -248,11 +250,67 @@ test('a bid with no eligible end-user offers a way forward, not a dead end', asy
   } finally {
     const { error } = await supabase
       .from('users')
-      .update({ kyc_status: 'approved' })
+      .update({ kyc_status: 'approved', account_type: null })
       .eq('id', investorId)
 
     if (error) throw error
     await restoreIndividualKyc(supabase, investorId)
+  }
+})
+
+// The platform is closed until an admin approves the KYC application. New
+// accounts start as pending with nothing submitted (account_type is null until
+// the first submission), and are sent to the application form.
+test('an account that has not applied is sent to the KYC form instead of listings', async ({ page }) => {
+  const supabase = adminClient()
+  const { investorId } = await fixtureIds(supabase)
+  const { error } = await supabase
+    .from('users')
+    .update({ kyc_status: 'pending', account_type: null })
+    .eq('id', investorId)
+
+  if (error) throw error
+
+  try {
+    await page.goto('/listings')
+    await page.waitForURL(/\/auth\/kyc/)
+    await expect(
+      page.getByRole('heading', { name: 'Complete your investor application' })
+    ).toBeVisible()
+    await expect(page.getByText('How are you investing?')).toBeVisible()
+    // The gated pages are not linked from the nav either.
+    await expect(page.getByRole('link', { name: 'Listings', exact: true })).toHaveCount(0)
+  } finally {
+    await supabase.from('users').update({ kyc_status: 'approved', account_type: null }).eq('id', investorId)
+  }
+})
+
+// Once submitted, the applicant sees the confirmation, and both the pages and
+// the API stay closed until approval.
+test('a submitted application shows under review and the NDA API refuses it', async ({ page }) => {
+  const supabase = adminClient()
+  const { investorId, listingId } = await fixtureIds(supabase)
+  const { error } = await supabase
+    .from('users')
+    .update({ kyc_status: 'pending', account_type: 'individual' })
+    .eq('id', investorId)
+
+  if (error) throw error
+
+  try {
+    await page.goto('/auth/kyc')
+    await expect(page.getByRole('heading', { name: 'Application under review' })).toBeVisible()
+    await expect(page.getByTestId('kyc-under-review')).toContainText(INVESTOR_EMAIL)
+
+    await page.goto(`/listings/${listingId}`)
+    await page.waitForURL(/\/auth\/kyc/)
+
+    const res = await page.request.post('/api/nda', {
+      data: { listing_id: listingId, signature_image: 'data:image/png;base64,iVBORw0KGgo=' },
+    })
+    expect(res.status()).toBe(403)
+  } finally {
+    await supabase.from('users').update({ kyc_status: 'approved', account_type: null }).eq('id', investorId)
   }
 })
 

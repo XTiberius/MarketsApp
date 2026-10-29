@@ -20,6 +20,12 @@ import { AccreditationDefinitions } from '@/components/AccreditationDefinitions'
 interface Props {
   userId: string
   kycStatus: KycStatus
+  /**
+   * Whether an application has been submitted. A pending status alone cannot
+   * tell: new accounts start as pending before they have applied.
+   */
+  submitted: boolean
+  email?: string | null
   firstName?: string | null
   lastName?: string | null
 }
@@ -72,7 +78,7 @@ function emptyEntity(): EntityForm {
   }
 }
 
-export function KYCForm({ kycStatus, firstName, lastName }: Props) {
+export function KYCForm({ kycStatus, submitted, email, firstName, lastName }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -93,13 +99,18 @@ export function KYCForm({ kycStatus, firstName, lastName }: Props) {
   })
   const [entities, setEntities] = useState<EntityForm[]>([emptyEntity()])
 
-  if (kycStatus === 'pending') {
+  if (kycStatus === 'pending' && submitted) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-2xl border border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning)/0.08)] p-6 text-center">
+      <div
+        className="flex flex-col items-center gap-3 rounded-2xl border border-[hsl(var(--warning)/0.3)] bg-[hsl(var(--warning)/0.08)] p-6 text-center"
+        data-testid="kyc-under-review"
+      >
         <Clock className="size-7 text-warning" />
-        <p className="font-display font-semibold text-foreground">KYC Under Review</p>
+        <p className="font-display font-semibold text-foreground">Your application has been received</p>
         <p className="text-sm text-muted-foreground">
-          Your KYC submission is being reviewed. You&apos;ll be notified once approved.
+          Our team is reviewing it now. We&apos;ll email you
+          {email ? <> at <span className="text-foreground">{email}</span></> : null}
+          {' '}as soon as it&apos;s approved. You won&apos;t have access to listings until then.
         </p>
       </div>
     )
@@ -172,6 +183,8 @@ export function KYCForm({ kycStatus, firstName, lastName }: Props) {
       return
     }
 
+    // Land on the application page's confirmation wherever the form was mounted.
+    router.replace('/auth/kyc')
     router.refresh()
   }
 

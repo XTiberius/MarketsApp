@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { GlassCard } from '@/components/ui/glass-card'
-import { StatusBadge } from '@/components/ui/badge'
+import { Badge, StatusBadge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { formatDate } from '@/lib/utils'
 import type { KycEntity, KycIndividual, KycStatus, User } from '@/lib/types'
@@ -90,6 +90,10 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
         const individualName = user.kyc_individual
           ? `${user.kyc_individual.first_name} ${user.kyc_individual.last_name}`
           : null
+        // New accounts start as "pending" before they have applied; there is
+        // nothing to approve or reject until a submission exists.
+        const hasSubmission = !!user.kyc_individual || !!user.kyc_entity
+        const notSubmitted = user.kyc_status === 'pending' && !hasSubmission
 
         return (
           <GlassCard key={user.id} interactive className="p-4">
@@ -100,7 +104,11 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
               </div>
 
               <div className="flex flex-wrap items-center gap-3">
-                <StatusBadge kind="kycStatus" value={user.kyc_status} />
+                {notSubmitted ? (
+                  <Badge tone="neutral" data-testid="admin-kyc-not-submitted">Not submitted</Badge>
+                ) : (
+                  <StatusBadge kind="kycStatus" value={user.kyc_status} />
+                )}
                 <Button
                   type="button"
                   variant="outline"
@@ -143,11 +151,13 @@ export function AdminKycManagement({ users: initialUsers }: Props) {
                   </div>
                 ) : (
                   <div className="text-muted-foreground">
-                    No individual KYC submission found.
+                    {hasSubmission
+                      ? 'No individual KYC submission found.'
+                      : 'No KYC application has been submitted yet. There is nothing to review until the applicant completes it.'}
                   </div>
                 )}
 
-                {user.kyc_status === 'pending' && (
+                {user.kyc_status === 'pending' && hasSubmission && (
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap gap-2">
                       <Button

@@ -1,10 +1,10 @@
-import { requireAuth } from '@/lib/auth'
+import { requireKycApproved } from '@/lib/auth'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { ListingsBrowser } from '@/components/ListingsBrowser'
 import type { ListingPublic } from '@/lib/types'
 
 export default async function ListingsPage() {
-  await requireAuth()
+  await requireKycApproved()
   const supabase = await createServerSupabaseClient()
 
   const { data: listings } = await supabase

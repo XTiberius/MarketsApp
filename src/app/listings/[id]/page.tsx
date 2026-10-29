@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ArrowLeft, Lock, FileText, Download } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { requireAuth } from '@/lib/auth'
+import { requireKycApproved } from '@/lib/auth'
 import { loadEndUsers, type EndUserOption } from '@/lib/end-users'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { BidModal } from '@/components/BidModal'
@@ -32,7 +32,7 @@ interface Props {
 
 export default async function ListingDetailPage({ params }: Props) {
   const { id } = await params
-  const user = await requireAuth()
+  const user = await requireKycApproved()
   const supabase = await createServerSupabaseClient()
 
   const { data: listing } = await supabase

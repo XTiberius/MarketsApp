@@ -37,7 +37,9 @@ export default function CompleteProfilePage() {
       return
     }
 
-    router.replace('/listings')
+    // Names are only the first step: the investor application comes next, and
+    // the platform stays closed until an admin approves it.
+    router.replace('/auth/kyc')
     router.refresh()
   }
 
